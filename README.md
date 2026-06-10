@@ -28,7 +28,7 @@ Interaktivní webová simulace jízdy autem pro procvičování úloh na rychlos
 ## Lokální spuštění
 
 ```bash
-git clone https://github.com/frantisekcab/auto-jizda.git
+git clone https://github.com/frantisekvvb/auto-jizda.git
 cd auto-jizda
 npm run dev
 ```
@@ -59,7 +59,7 @@ Repozitář lze nasadit jako statickou stránku bez buildu na serveru:
 1. Nahraj repozitář na GitHub (`git push`).
 2. V repozitáři: **Settings → Pages**.
 3. **Source:** Deploy from a branch, větev `main`, složka `/ (root)`.
-4. Po chvíli bude simulace na [https://frantisekcab.github.io/auto-jizda/](https://frantisekcab.github.io/auto-jizda/).
+4. Po chvíli bude simulace na [https://frantisekvvb.github.io/auto-jizda/](https://frantisekvvb.github.io/auto-jizda/).
 
 Před pushnutím vždy spusť `npm run build`, aby byl v repu aktuální `index.html`.
 

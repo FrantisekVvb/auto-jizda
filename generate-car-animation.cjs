@@ -680,6 +680,7 @@ function buildHtml() {
       transform: translateX(-50%);
       display: flex;
       flex-wrap: wrap;
+      align-items: flex-end;
       justify-content: center;
       gap: 8px;
       max-width: calc(100vw - 32px);
@@ -772,11 +773,23 @@ function buildHtml() {
     }
     .distance-field {
       display: flex;
-      align-items: center;
-      gap: 6px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
       font: 600 13px/1.2 system-ui, -apple-system, sans-serif;
       color: #374151;
       white-space: nowrap;
+    }
+    .distance-field-label {
+      font-size: 11px;
+      line-height: 1;
+      color: #6B7280;
+      letter-spacing: 0.02em;
+    }
+    .distance-field-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .distance-field input {
       width: 76px;
@@ -993,14 +1006,18 @@ ${lanes}
 
 <nav class="controls" aria-label="Ovládání animace">
     <label class="distance-field" for="targetKmInput">
-      <span>Cíl</span>
-      <input type="number" id="targetKmInput" min="${MIN_TARGET_DISPLAY_KM}" step="10" value="${DEFAULT_TARGET_DISPLAY_KM}" aria-label="Cílová vzdálenost v kilometrech" />
-      <span>km</span>
+      <span class="distance-field-label">Cíl</span>
+      <span class="distance-field-row">
+        <input type="number" id="targetKmInput" min="${MIN_TARGET_DISPLAY_KM}" step="10" value="${DEFAULT_TARGET_DISPLAY_KM}" aria-label="Cílová vzdálenost v kilometrech" />
+        <span>km</span>
+      </span>
     </label>
     <label class="distance-field" for="targetHoursInput">
-      <span>Čas</span>
-      <input type="number" class="time-part" id="targetHoursInput" min="${MIN_TARGET_HOURS}" max="99" step="0.5" value="${DEFAULT_TARGET_HOURS}" aria-label="Hodiny na stopkách" />
-      <span>h</span>
+      <span class="distance-field-label">Čas</span>
+      <span class="distance-field-row">
+        <input type="number" class="time-part" id="targetHoursInput" min="${MIN_TARGET_HOURS}" max="99" step="0.5" value="${DEFAULT_TARGET_HOURS}" aria-label="Hodiny na stopkách" />
+        <span>h</span>
+      </span>
     </label>
     <button type="button" class="start-btn" id="startBtn">Spustit</button>
     <button type="button" class="pause-btn" id="pauseBtn" disabled>Pauza</button>
