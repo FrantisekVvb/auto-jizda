@@ -64,7 +64,10 @@ const WHEEL_CENTERS = [
 const FRONT_WHEEL_X = WHEEL_CENTERS[1].x;
 const CLOCK_SIZE = 72;
 const CLOCK_TOP = 12;
-const HUD_SHIFT_LEFT = 110;
+const HUD_SHIFT_LEFT = 170;
+const CONTROLS_SHIFT_LEFT = 60;
+const HUD_GAUGE_GAP = 100;
+const ANSWER_TOLERANCE = 0.5;
 const KM_PER_SECOND_HAND_REV = 1;
 const KM_PER_MINUTE_HAND_REV = 60;
 const KM_PER_HOUR_HAND_REV = KM_PER_MINUTE_HAND_REV * 12;
@@ -148,6 +151,20 @@ function clockTickMarks() {
   return ticks.join('\n      ');
 }
 
+function answerKeypadMarkup() {
+  const digitBtns = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    .map((n) => `<button type="button" class="answer-keypad-key" data-key="${n}">${n}</button>`)
+    .join('\n    ');
+  return `<div class="answer-keypad" id="answerKeypad" hidden aria-label="Číselná klávesnice">
+  <div class="answer-keypad-grid" id="answerKeypadGrid" role="group" aria-label="Číslice">
+    ${digitBtns}
+    <button type="button" class="answer-keypad-key answer-keypad-key--comma" id="answerKeypadComma" data-key=",">,</button>
+    <button type="button" class="answer-keypad-key" data-key="0">0</button>
+    <button type="button" class="answer-keypad-key" data-key="backspace" aria-label="Smazat">⌫</button>
+  </div>
+</div>`;
+}
+
 function kmhFractionMarkup(extraClass = '') {
   const cls = extraClass ? `unit-fraction ${extraClass}` : 'unit-fraction';
   return `<span class="${cls}" aria-label="kilometrů za hodinu">
@@ -190,11 +207,12 @@ function clockMarkup() {
   </svg>
   <div class="stopwatch" id="stopwatchEl" aria-live="polite">00 h : 00 min</div>
   <div class="hud-question-slot">
+  ${answerKeypadMarkup()}
     <div class="speed-question-panel" id="speedQuestionPanel">
       <div class="calc-question-row">
         <p class="speed-question-text" id="speedQuestionText">Jakou rychlostí auto jede?</p>
         <div class="speed-answer-panel" id="speedAnswerRow">
-          <input type="number" class="speed-answer-input" id="speedAnswerInput" min="0" step="1" inputmode="numeric" aria-label="Odpověď v kilometrech za hodinu" />
+          <input type="text" class="speed-answer-input" id="speedAnswerInput" readonly inputmode="none" autocomplete="off" aria-label="Odpověď v kilometrech za hodinu" />
           ${kmhFractionMarkup()}
           <button type="button" class="speed-check-btn" id="speedCheckBtn" aria-label="Ověřit odpověď">✓</button>
         </div>
@@ -205,7 +223,7 @@ function clockMarkup() {
       <div class="calc-question-row">
         <p class="distance-question-text" id="distanceQuestionText">Jak daleko auto dojede?</p>
         <div class="distance-answer-panel" id="distanceAnswerRow">
-          <input type="number" class="distance-answer-input" id="distanceAnswerInput" min="0" step="1" inputmode="numeric" aria-label="Odpověď v kilometrech" />
+          <input type="text" class="distance-answer-input" id="distanceAnswerInput" readonly inputmode="none" autocomplete="off" aria-label="Odpověď v kilometrech" />
           <span>km</span>
           <button type="button" class="distance-check-btn" id="distanceCheckBtn" aria-label="Ověřit odpověď">✓</button>
         </div>
@@ -216,7 +234,7 @@ function clockMarkup() {
       <div class="calc-question-row">
         <p class="time-question-text" id="timeQuestionText">Jak dlouho auto pojede?</p>
         <div class="time-answer-panel" id="timeAnswerRow">
-          <input type="text" class="time-answer-input" id="timeAnswerInput" inputmode="decimal" aria-label="Odpověď v hodinách" />
+          <input type="text" class="time-answer-input" id="timeAnswerInput" readonly inputmode="none" autocomplete="off" aria-label="Odpověď v hodinách" />
           <span>h</span>
           <button type="button" class="time-check-btn" id="timeCheckBtn" aria-label="Ověřit odpověď">✓</button>
         </div>
@@ -482,6 +500,7 @@ function buildHtml() {
       max-width: min(380px, calc(100vw - 48px));
       pointer-events: none;
     }
+    .hud-question-slot .answer-keypad,
     .hud-question-slot .speed-question-panel,
     .hud-question-slot .distance-question-panel,
     .hud-question-slot .time-question-panel {
@@ -612,6 +631,19 @@ function buildHtml() {
       background: #B91C1C;
       border-color: #991B1B;
     }
+    .speed-answer-panel.is-approximate .speed-check-btn,
+    .distance-answer-panel.is-approximate .distance-check-btn,
+    .time-answer-panel.is-approximate .time-check-btn {
+      border-color: #EA580C;
+      background: #F97316;
+      color: #fff;
+    }
+    .speed-answer-panel.is-approximate .speed-check-btn:hover:not(:disabled),
+    .distance-answer-panel.is-approximate .distance-check-btn:hover:not(:disabled),
+    .time-answer-panel.is-approximate .time-check-btn:hover:not(:disabled) {
+      background: #EA580C;
+      border-color: #C2410C;
+    }
     .speed-answer-feedback,
     .distance-answer-feedback,
     .time-answer-feedback {
@@ -630,6 +662,11 @@ function buildHtml() {
     .time-answer-panel.is-wrong .time-answer-input {
       border-color: #DC2626;
     }
+    .speed-answer-panel.is-approximate .speed-answer-input,
+    .distance-answer-panel.is-approximate .distance-answer-input,
+    .time-answer-panel.is-approximate .time-answer-input {
+      border-color: #F97316;
+    }
     .speed-answer-feedback.is-correct,
     .distance-answer-feedback.is-correct,
     .time-answer-feedback.is-correct {
@@ -639,6 +676,11 @@ function buildHtml() {
     .distance-answer-feedback.is-wrong,
     .time-answer-feedback.is-wrong {
       color: #DC2626;
+    }
+    .speed-answer-feedback.is-approximate,
+    .distance-answer-feedback.is-approximate,
+    .time-answer-feedback.is-approximate {
+      color: #EA580C;
     }
     .speed-answer-input,
     .distance-answer-input,
@@ -670,7 +712,7 @@ function buildHtml() {
       display: flex;
       flex-direction: row;
       align-items: flex-start;
-      gap: 12px;
+      gap: ${HUD_GAUGE_GAP}px;
     }
     .clock-stack {
       position: relative;
@@ -699,7 +741,7 @@ function buildHtml() {
     .distance-readout-wrap {
       position: absolute;
       top: 0;
-      left: calc(100% + 12px);
+      left: calc(100% + ${HUD_GAUGE_GAP}px);
       display: flex;
       align-items: center;
       min-height: var(--clock-size);
@@ -839,7 +881,7 @@ function buildHtml() {
       position: fixed;
       left: 50%;
       bottom: 24px;
-      transform: translateX(-50%);
+      transform: translateX(calc(-50% - ${CONTROLS_SHIFT_LEFT}px));
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1048,6 +1090,62 @@ function buildHtml() {
       .value-step-btn {
         width: 44px;
         height: 44px;
+      }
+    }
+    .answer-keypad {
+      position: absolute;
+      right: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid #E5E7EB;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    }
+    .answer-keypad[hidden] {
+      display: none !important;
+    }
+    .answer-keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 56px);
+      gap: 8px;
+    }
+    .answer-keypad-key {
+      appearance: none;
+      width: 56px;
+      height: 48px;
+      border: 1px solid #D1D5DB;
+      background: #F9FAFB;
+      color: #111827;
+      border-radius: 12px;
+      font: 700 20px/1 system-ui, -apple-system, sans-serif;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .answer-keypad-key:hover:not(:disabled) {
+      background: #F3F4F6;
+      border-color: #9CA3AF;
+    }
+    .answer-keypad-key:active:not(:disabled) {
+      background: #E5E7EB;
+    }
+    @media (pointer: coarse) {
+      .answer-keypad-grid {
+        grid-template-columns: repeat(3, 60px);
+        gap: 10px;
+      }
+      .answer-keypad-key {
+        width: 60px;
+        height: 52px;
+        font-size: 22px;
       }
     }
     .distance-field input:disabled {
@@ -1348,6 +1446,7 @@ ${buttons}
   const KM_PER_HOUR_HAND_REV = ${KM_PER_HOUR_HAND_REV};
   const REAL_SECONDS_PER_STOPWATCH_HOUR = ${REAL_SECONDS_PER_STOPWATCH_HOUR};
   const ANIM_SPEED = ${ANIM_SPEED};
+  const ANSWER_TOLERANCE = ${ANSWER_TOLERANCE};
   let baseKm = 0;
   let targetTravelKm = 0;
   let finished = false;
@@ -1382,6 +1481,9 @@ ${buttons}
   const timeCheckBtn = document.getElementById('timeCheckBtn');
   const timeAnswerRow = document.getElementById('timeAnswerRow');
   const timeAnswerFeedback = document.getElementById('timeAnswerFeedback');
+  const answerKeypad = document.getElementById('answerKeypad');
+  const answerInputs = [speedAnswerInput, distanceAnswerInput, timeAnswerInput].filter(Boolean);
+  let activeAnswerInput = null;
   const SPEED_CALC_CAR = '1';
   const DISTANCE_CALC_CAR = '2';
   const TIME_CALC_CAR = '3';
@@ -1462,38 +1564,123 @@ ${buttons}
     return (120 + ratio * 300) + 'deg';
   }
 
+  function getExactSpeedKmh() {
+    return getTargetDisplayKm() / getTargetStopwatchHours();
+  }
+
   function getCorrectSpeedKmh() {
-    return Math.round(getTargetDisplayKm() / getTargetStopwatchHours());
+    return Math.round(getExactSpeedKmh());
+  }
+
+  function setAnswerInputValue(input, value) {
+    if (!input) return;
+    input.value = value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function hideAnswerKeypad() {
+    activeAnswerInput = null;
+    if (answerKeypad) answerKeypad.hidden = true;
+  }
+
+  function showAnswerKeypad(input) {
+    if (!answerKeypad || !input || input.disabled) return;
+    activeAnswerInput = input;
+    answerKeypad.hidden = false;
+  }
+
+  function handleAnswerKeypadKey(key) {
+    if (!activeAnswerInput) return;
+    const current = activeAnswerInput.value;
+    if (key === 'backspace') {
+      setAnswerInputValue(activeAnswerInput, current.slice(0, -1));
+      return;
+    }
+    if (key === ',') {
+      if (current.includes(',')) return;
+      setAnswerInputValue(activeAnswerInput, current + ',');
+      return;
+    }
+    if (key < '0' || key > '9') return;
+    if (current === '0') {
+      setAnswerInputValue(activeAnswerInput, key);
+      return;
+    }
+    setAnswerInputValue(activeAnswerInput, current + key);
+  }
+
+  function initAnswerKeypad() {
+    if (answerKeypad) {
+      answerKeypad.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+      });
+      answerKeypad.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-key]');
+        if (!btn) return;
+        handleAnswerKeypadKey(btn.getAttribute('data-key'));
+      });
+    }
+    answerInputs.forEach((input) => {
+      input.addEventListener('focus', () => showAnswerKeypad(input));
+      input.addEventListener('click', () => showAnswerKeypad(input));
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (!answerKeypad || answerKeypad.hidden) return;
+      const target = event.target;
+      if (answerKeypad.contains(target)) return;
+      if (answerInputs.some((input) => input === target)) return;
+      hideAnswerKeypad();
+    });
+  }
+
+  function evaluateAnswer(userValue, correctValue) {
+    const diff = Math.abs(userValue - correctValue);
+    if (diff < 1e-9) return 'exact';
+    if (diff <= ANSWER_TOLERANCE) return 'approximate';
+    return 'wrong';
+  }
+
+  function applyAnswerFeedback(rowEl, feedbackEl, result, invalidMessage) {
+    const messages = {
+      exact: 'Správně!',
+      approximate: 'Přibližně správně',
+      wrong: 'Špatně',
+    };
+    const className = result === 'exact'
+      ? 'is-correct'
+      : result === 'approximate'
+        ? 'is-approximate'
+        : 'is-wrong';
+    if (rowEl) {
+      rowEl.classList.remove('is-correct', 'is-approximate', 'is-wrong');
+      rowEl.classList.add(className);
+    }
+    if (feedbackEl) {
+      feedbackEl.textContent = invalidMessage || messages[result];
+      feedbackEl.classList.remove('is-correct', 'is-approximate', 'is-wrong');
+      feedbackEl.classList.add(className);
+    }
   }
 
   function clearSpeedAnswerFeedback() {
     if (speedAnswerRow) {
-      speedAnswerRow.classList.remove('is-correct', 'is-wrong');
+      speedAnswerRow.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
     if (speedAnswerFeedback) {
       speedAnswerFeedback.textContent = '';
-      speedAnswerFeedback.classList.remove('is-correct', 'is-wrong');
+      speedAnswerFeedback.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
   }
 
   function verifySpeedAnswer() {
     if (!speedAnswerInput) return;
-    const raw = Number(speedAnswerInput.value);
+    const raw = parseHoursInput(speedAnswerInput.value);
     clearSpeedAnswerFeedback();
     if (!Number.isFinite(raw)) {
-      if (speedAnswerRow) speedAnswerRow.classList.add('is-wrong');
-      if (speedAnswerFeedback) {
-        speedAnswerFeedback.textContent = 'Zadej číslo';
-        speedAnswerFeedback.classList.add('is-wrong');
-      }
+      applyAnswerFeedback(speedAnswerRow, speedAnswerFeedback, 'wrong', 'Zadej číslo');
       return;
     }
-    const isCorrect = Math.round(raw) === getCorrectSpeedKmh();
-    if (speedAnswerRow) speedAnswerRow.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
-    if (speedAnswerFeedback) {
-      speedAnswerFeedback.textContent = isCorrect ? 'Správně!' : 'Špatně';
-      speedAnswerFeedback.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
-    }
+    applyAnswerFeedback(speedAnswerRow, speedAnswerFeedback, evaluateAnswer(raw, getExactSpeedKmh()));
   }
 
   function updateSpeedQuestionPanel() {
@@ -1507,41 +1694,39 @@ ${buttons}
     if (speedCheckBtn) {
       speedCheckBtn.disabled = !show;
     }
-    if (!show) clearSpeedAnswerFeedback();
+    if (!show) {
+      clearSpeedAnswerFeedback();
+      if (activeAnswerInput === speedAnswerInput) hideAnswerKeypad();
+    }
+  }
+
+  function getExactDistanceKm() {
+    return getTargetSpeedKmh() * getTargetStopwatchHours();
   }
 
   function getCorrectDistanceKm() {
-    return Math.round(getTargetSpeedKmh() * getTargetStopwatchHours());
+    return Math.round(getExactDistanceKm());
   }
 
   function clearDistanceAnswerFeedback() {
     if (distanceAnswerRow) {
-      distanceAnswerRow.classList.remove('is-correct', 'is-wrong');
+      distanceAnswerRow.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
     if (distanceAnswerFeedback) {
       distanceAnswerFeedback.textContent = '';
-      distanceAnswerFeedback.classList.remove('is-correct', 'is-wrong');
+      distanceAnswerFeedback.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
   }
 
   function verifyDistanceAnswer() {
     if (!distanceAnswerInput) return;
-    const raw = Number(distanceAnswerInput.value);
+    const raw = parseHoursInput(distanceAnswerInput.value);
     clearDistanceAnswerFeedback();
     if (!Number.isFinite(raw)) {
-      if (distanceAnswerRow) distanceAnswerRow.classList.add('is-wrong');
-      if (distanceAnswerFeedback) {
-        distanceAnswerFeedback.textContent = 'Zadej číslo';
-        distanceAnswerFeedback.classList.add('is-wrong');
-      }
+      applyAnswerFeedback(distanceAnswerRow, distanceAnswerFeedback, 'wrong', 'Zadej číslo');
       return;
     }
-    const isCorrect = Math.round(raw) === getCorrectDistanceKm();
-    if (distanceAnswerRow) distanceAnswerRow.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
-    if (distanceAnswerFeedback) {
-      distanceAnswerFeedback.textContent = isCorrect ? 'Správně!' : 'Špatně';
-      distanceAnswerFeedback.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
-    }
+    applyAnswerFeedback(distanceAnswerRow, distanceAnswerFeedback, evaluateAnswer(raw, getExactDistanceKm()));
   }
 
   function updateDistanceQuestionPanel() {
@@ -1560,20 +1745,27 @@ ${buttons}
     if (distanceCheckBtn) {
       distanceCheckBtn.disabled = !show;
     }
-    if (!show) clearDistanceAnswerFeedback();
+    if (!show) {
+      clearDistanceAnswerFeedback();
+      if (activeAnswerInput === distanceAnswerInput) hideAnswerKeypad();
+    }
+  }
+
+  function getExactTimeHours() {
+    return getTargetDisplayKm() / getTargetSpeedKmh();
   }
 
   function getCorrectTimeHours() {
-    return Math.round((getTargetDisplayKm() / getTargetSpeedKmh()) * 2) / 2;
+    return Math.round(getExactTimeHours() * 2) / 2;
   }
 
   function clearTimeAnswerFeedback() {
     if (timeAnswerRow) {
-      timeAnswerRow.classList.remove('is-correct', 'is-wrong');
+      timeAnswerRow.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
     if (timeAnswerFeedback) {
       timeAnswerFeedback.textContent = '';
-      timeAnswerFeedback.classList.remove('is-correct', 'is-wrong');
+      timeAnswerFeedback.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
   }
 
@@ -1582,19 +1774,10 @@ ${buttons}
     const raw = parseHoursInput(timeAnswerInput.value);
     clearTimeAnswerFeedback();
     if (!Number.isFinite(raw)) {
-      if (timeAnswerRow) timeAnswerRow.classList.add('is-wrong');
-      if (timeAnswerFeedback) {
-        timeAnswerFeedback.textContent = 'Zadej číslo';
-        timeAnswerFeedback.classList.add('is-wrong');
-      }
+      applyAnswerFeedback(timeAnswerRow, timeAnswerFeedback, 'wrong', 'Zadej číslo');
       return;
     }
-    const isCorrect = Math.round(raw * 2) / 2 === getCorrectTimeHours();
-    if (timeAnswerRow) timeAnswerRow.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
-    if (timeAnswerFeedback) {
-      timeAnswerFeedback.textContent = isCorrect ? 'Správně!' : 'Špatně';
-      timeAnswerFeedback.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
-    }
+    applyAnswerFeedback(timeAnswerRow, timeAnswerFeedback, evaluateAnswer(raw, getExactTimeHours()));
   }
 
   function updateTimeQuestionPanel() {
@@ -1613,7 +1796,10 @@ ${buttons}
     if (timeCheckBtn) {
       timeCheckBtn.disabled = !show;
     }
-    if (!show) clearTimeAnswerFeedback();
+    if (!show) {
+      clearTimeAnswerFeedback();
+      if (activeAnswerInput === timeAnswerInput) hideAnswerKeypad();
+    }
   }
 
   function updateAnalogClock() {
@@ -1935,6 +2121,7 @@ ${buttons}
     clearSpeedAnswerFeedback();
     clearDistanceAnswerFeedback();
     clearTimeAnswerFeedback();
+    hideAnswerKeypad();
 
     if (instrumentCluster) {
       instrumentCluster.style.setProperty('--hand-sec', handAngle(0));
@@ -2222,6 +2409,7 @@ ${buttons}
       clearSpeedAnswerFeedback();
       clearDistanceAnswerFeedback();
       clearTimeAnswerFeedback();
+      hideAnswerKeypad();
       updateSettingPanels();
       updateSpeedometer();
       updateAnalogClock();
@@ -2250,6 +2438,8 @@ ${buttons}
   if (timeAnswerInput) {
     timeAnswerInput.addEventListener('input', clearTimeAnswerFeedback);
   }
+
+  initAnswerKeypad();
 
   updateKmSigns();
   updateSettingPanels();
