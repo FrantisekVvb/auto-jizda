@@ -72,19 +72,23 @@ const KM_PER_SECOND_HAND_REV = 1;
 const KM_PER_MINUTE_HAND_REV = 60;
 const KM_PER_HOUR_HAND_REV = KM_PER_MINUTE_HAND_REV * 12;
 const REAL_SECONDS_PER_STOPWATCH_HOUR = 10;
-const SPEEDO_MAX_KMH = 200;
+const SPEEDO_DIAL_LABEL_MAX_KMH = 200;
+const SPEEDO_NEEDLE_MAX_KMH = 240;
+const SPEEDO_ZERO_GAP_DEG = 10;
+const SPEEDO_SWEEP_DEG = 360 - SPEEDO_ZERO_GAP_DEG;
+const SPEEDO_NEEDLE_RAMP_MS = 200;
 
 function speedoAngleDeg(kmh) {
-  const ratio = Math.min(Math.max(kmh, 0) / SPEEDO_MAX_KMH, 1);
-  return 120 + ratio * 300;
+  const ratio = Math.min(Math.max(kmh, 0) / SPEEDO_NEEDLE_MAX_KMH, 1);
+  return 120 + ratio * SPEEDO_SWEEP_DEG;
 }
 
 function speedoTickMarks() {
   const ticks = [];
   const labels = [];
-  for (let kmh = 0; kmh <= SPEEDO_MAX_KMH; kmh += 40) {
-    const ratio = kmh / SPEEDO_MAX_KMH;
-    const deg = 120 + ratio * 300;
+  for (let kmh = 0; kmh <= SPEEDO_DIAL_LABEL_MAX_KMH; kmh += 40) {
+    const ratio = kmh / SPEEDO_NEEDLE_MAX_KMH;
+    const deg = 120 + ratio * SPEEDO_SWEEP_DEG;
     const a = ((deg - 90) * Math.PI) / 180;
     const major = kmh % 80 === 0;
     const r1 = major ? 27 : 29;
@@ -96,7 +100,7 @@ function speedoTickMarks() {
     ticks.push(
       `<line x1="${fmt(x1)}" y1="${fmt(y1)}" x2="${fmt(x2)}" y2="${fmt(y2)}" stroke="${major ? '#374151' : '#9CA3AF'}" stroke-width="${major ? 1.8 : 1.1}" stroke-linecap="round"/>`
     );
-    if (major || kmh === SPEEDO_MAX_KMH) {
+    if (major || kmh === SPEEDO_DIAL_LABEL_MAX_KMH) {
       const lx = 40 + 22 * Math.cos(a);
       const ly = 40 + 22 * Math.sin(a);
       labels.push(
@@ -110,7 +114,7 @@ function speedoTickMarks() {
 function speedometerMarkup() {
   const { ticks, labels } = speedoTickMarks();
   const arcStart = speedoAngleDeg(0);
-  const arcEnd = speedoAngleDeg(SPEEDO_MAX_KMH);
+  const arcEnd = speedoAngleDeg(SPEEDO_NEEDLE_MAX_KMH);
   const a1 = ((arcStart - 90) * Math.PI) / 180;
   const a2 = ((arcEnd - 90) * Math.PI) / 180;
   const x1 = 40 + 33 * Math.cos(a1);
@@ -122,6 +126,9 @@ function speedometerMarkup() {
     <path d="M ${fmt(x1)} ${fmt(y1)} A 33 33 0 1 1 ${fmt(x2)} ${fmt(y2)}" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round" fill="none"/>
     ${ticks}
     ${labels}
+    <foreignObject class="speedometer-unit" x="24" y="47" width="32" height="20">
+      <div xmlns="http://www.w3.org/1999/xhtml" class="speedometer-unit-inner">${kmhFractionMarkup('unit-fraction--speedo')}</div>
+    </foreignObject>
     <g class="speed-hand">
       <line x1="40" y1="40" x2="40" y2="14" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round"/>
     </g>
@@ -575,6 +582,26 @@ function buildHtml() {
       margin-left: 4px;
       font-size: 0.72em;
     }
+    .speedometer-unit {
+      pointer-events: none;
+      overflow: visible;
+    }
+    .speedometer-unit-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: #6B7280;
+    }
+    .unit-fraction--speedo {
+      font: 600 6.5px/1 system-ui, -apple-system, sans-serif;
+    }
+    .unit-fraction--speedo .unit-fraction-bar {
+      min-width: 14px;
+      border-top-width: 0.8px;
+      margin: 0.5px 0;
+    }
     .speed-check-btn,
     .distance-check-btn,
     .time-check-btn {
@@ -845,6 +872,9 @@ function buildHtml() {
     .speedometer.is-broken .speed-hand line {
       stroke: #9CA3AF;
       opacity: 0.75;
+    }
+    .speedometer.is-broken .speedometer-unit-inner {
+      color: #9CA3AF;
     }
     .speed-stack.speed-calc-mode .speed-readout {
       display: none;
@@ -1524,7 +1554,8 @@ ${buttons}
   const REFERENCE_KMH = ${REFERENCE_KMH};
   const REFERENCE_KM_S = ${REFERENCE_KM_S};
   const JET_ENGINE_MIN_SPEED_KM_S = ${JET_ENGINE_MIN_SPEED_KM_S};
-  const SPEEDO_MAX_KMH = ${SPEEDO_MAX_KMH};
+  const SPEEDO_NEEDLE_MAX_KMH = ${SPEEDO_NEEDLE_MAX_KMH};
+  const SPEEDO_SWEEP_DEG = ${SPEEDO_SWEEP_DEG};
   const KM_PER_LOOP = ${kmPerLoop};
   const SIGN_SPACING_VW = ${SIGN_SPACING_VW};
   const SIGN_W = ${SIGN_W};
@@ -1548,6 +1579,11 @@ ${buttons}
   let pausedTotalMs = 0;
   let currentRunAnimSpeed = ANIM_SPEED;
   let currentRunSpeedKmS = 0;
+  let displayedSpeedKmh = 0;
+  let speedNeedleAnimStartMs = null;
+  let speedNeedleFromKmh = 0;
+  let speedNeedleToKmh = 0;
+  const SPEEDO_NEEDLE_RAMP_MS = ${SPEEDO_NEEDLE_RAMP_MS};
   const instrumentCluster = document.querySelector('.instrument-cluster');
   const stopwatchEl = document.getElementById('stopwatchEl');
   const speedStack = document.querySelector('.speed-stack');
@@ -1690,14 +1726,19 @@ ${buttons}
     return stage.dataset.view === TIME_CALC_CAR;
   }
 
-  function getCurrentSpeedKmh() {
-    if (!stage.classList.contains('is-running')) return 0;
+  function getTargetSpeedometerKmh() {
+    if (!stage.classList.contains('is-running') && !stage.classList.contains('is-paused')) return 0;
+    if (runStartTime === null) return 0;
     return currentRunSpeedKmS * REFERENCE_KMH / REFERENCE_KM_S;
   }
 
+  function getCurrentSpeedKmh() {
+    return getTargetSpeedometerKmh();
+  }
+
   function speedHandAngle(kmh) {
-    const ratio = Math.min(Math.max(kmh, 0) / SPEEDO_MAX_KMH, 1);
-    return (120 + ratio * 300) + 'deg';
+    const ratio = Math.min(Math.max(kmh, 0) / SPEEDO_NEEDLE_MAX_KMH, 1);
+    return (120 + ratio * SPEEDO_SWEEP_DEG) + 'deg';
   }
 
   function getExactSpeedKmh() {
@@ -2023,14 +2064,27 @@ ${buttons}
     if (speedometerEl) speedometerEl.classList.toggle('is-broken', speedCalcMode);
 
     if (speedCalcMode) {
+      displayedSpeedKmh = 0;
+      speedNeedleAnimStartMs = null;
+      speedNeedleFromKmh = 0;
+      speedNeedleToKmh = 0;
       if (instrumentCluster) instrumentCluster.style.setProperty('--hand-speed', '120deg');
       return;
     }
 
-    const kmh = getCurrentSpeedKmh();
-    const rounded = Math.round(kmh);
+    const targetKmh = getTargetSpeedometerKmh();
+    if (speedNeedleAnimStartMs === null || speedNeedleToKmh !== targetKmh) {
+      speedNeedleFromKmh = displayedSpeedKmh;
+      speedNeedleToKmh = targetKmh;
+      speedNeedleAnimStartMs = performance.now();
+    }
+
+    const progress = Math.min(1, (performance.now() - speedNeedleAnimStartMs) / SPEEDO_NEEDLE_RAMP_MS);
+    displayedSpeedKmh = speedNeedleFromKmh + (speedNeedleToKmh - speedNeedleFromKmh) * progress;
+
+    const rounded = Math.round(displayedSpeedKmh);
     if (instrumentCluster) {
-      instrumentCluster.style.setProperty('--hand-speed', speedHandAngle(kmh));
+      instrumentCluster.style.setProperty('--hand-speed', speedHandAngle(displayedSpeedKmh));
     }
     if (speedReadout && speedReadout.textContent !== String(rounded)) {
       speedReadout.textContent = String(rounded);
@@ -2281,6 +2335,10 @@ ${buttons}
     runFinishTime = null;
     currentRunSpeedKmS = 0;
     currentRunAnimSpeed = ANIM_SPEED;
+    displayedSpeedKmh = 0;
+    speedNeedleAnimStartMs = null;
+    speedNeedleFromKmh = 0;
+    speedNeedleToKmh = 0;
 
     stage.classList.remove('is-running', 'is-paused');
 

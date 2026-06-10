@@ -125,6 +125,26 @@
       margin-left: 4px;
       font-size: 0.72em;
     }
+    .speedometer-unit {
+      pointer-events: none;
+      overflow: visible;
+    }
+    .speedometer-unit-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: #6B7280;
+    }
+    .unit-fraction--speedo {
+      font: 600 6.5px/1 system-ui, -apple-system, sans-serif;
+    }
+    .unit-fraction--speedo .unit-fraction-bar {
+      min-width: 14px;
+      border-top-width: 0.8px;
+      margin: 0.5px 0;
+    }
     .speed-check-btn,
     .distance-check-btn,
     .time-check-btn {
@@ -395,6 +415,9 @@
     .speedometer.is-broken .speed-hand line {
       stroke: #9CA3AF;
       opacity: 0.75;
+    }
+    .speedometer.is-broken .speedometer-unit-inner {
+      color: #9CA3AF;
     }
     .speed-stack.speed-calc-mode .speed-readout {
       display: none;
@@ -990,17 +1013,24 @@
   <div class="speed-stack">
   <svg class="speedometer" width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Tachometr">
     <circle cx="40" cy="40" r="37" fill="#FFFFFF" stroke="#111827" stroke-width="2.5"/>
-    <path d="M 68.58 56.50 A 33 33 0 1 1 68.58 23.50" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M 68.58 56.50 A 33 33 0 1 1 71.01 51.29" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round" fill="none"/>
     <line x1="63.38" y1="53.50" x2="70.31" y2="57.50" stroke="#374151" stroke-width="1.8" stroke-linecap="round"/>
-      <line x1="40.00" y1="69.00" x2="40.00" y2="75.00" stroke="#9CA3AF" stroke-width="1.1" stroke-linecap="round"/>
-      <line x1="16.62" y1="53.50" x2="9.69" y2="57.50" stroke="#374151" stroke-width="1.8" stroke-linecap="round"/>
-      <line x1="14.89" y1="25.50" x2="9.69" y2="22.50" stroke="#9CA3AF" stroke-width="1.1" stroke-linecap="round"/>
-      <line x1="40.00" y1="13.00" x2="40.00" y2="5.00" stroke="#374151" stroke-width="1.8" stroke-linecap="round"/>
-      <line x1="65.11" y1="25.50" x2="70.31" y2="22.50" stroke="#9CA3AF" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="40.84" y1="68.99" x2="41.02" y2="74.99" stroke="#9CA3AF" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="17.44" y1="54.84" x2="10.76" y2="59.23" stroke="#374151" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="13.72" y1="27.74" x2="8.28" y2="25.21" stroke="#9CA3AF" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="36.87" y1="13.18" x2="35.94" y2="5.24" stroke="#374151" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="62.75" y1="22.01" x2="67.45" y2="18.29" stroke="#9CA3AF" stroke-width="1.1" stroke-linecap="round"/>
     <text x="59.05" y="51.00" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="600" fill="#6B7280">0</text>
-      <text x="20.95" y="51.00" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="600" fill="#6B7280">80</text>
-      <text x="40.00" y="18.00" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="600" fill="#6B7280">160</text>
-      <text x="59.05" y="29.00" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="600" fill="#6B7280">200</text>
+      <text x="21.62" y="52.09" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="600" fill="#6B7280">80</text>
+      <text x="37.45" y="18.15" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="600" fill="#6B7280">160</text>
+      <text x="57.26" y="26.35" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="600" fill="#6B7280">200</text>
+    <foreignObject class="speedometer-unit" x="24" y="47" width="32" height="20">
+      <div xmlns="http://www.w3.org/1999/xhtml" class="speedometer-unit-inner"><span class="unit-fraction unit-fraction--speedo" aria-label="kilometrů za hodinu">
+  <span class="unit-fraction-part">km</span>
+  <span class="unit-fraction-bar" aria-hidden="true"></span>
+  <span class="unit-fraction-part">h</span>
+</span></div>
+    </foreignObject>
     <g class="speed-hand">
       <line x1="40" y1="40" x2="40" y2="14" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round"/>
     </g>
@@ -1934,7 +1964,8 @@
   const REFERENCE_KMH = 60;
   const REFERENCE_KM_S = 6;
   const JET_ENGINE_MIN_SPEED_KM_S = 20;
-  const SPEEDO_MAX_KMH = 200;
+  const SPEEDO_NEEDLE_MAX_KMH = 240;
+  const SPEEDO_SWEEP_DEG = 350;
   const KM_PER_LOOP = 16;
   const SIGN_SPACING_VW = 6.25;
   const SIGN_W = 96;
@@ -1958,6 +1989,11 @@
   let pausedTotalMs = 0;
   let currentRunAnimSpeed = ANIM_SPEED;
   let currentRunSpeedKmS = 0;
+  let displayedSpeedKmh = 0;
+  let speedNeedleAnimStartMs = null;
+  let speedNeedleFromKmh = 0;
+  let speedNeedleToKmh = 0;
+  const SPEEDO_NEEDLE_RAMP_MS = 200;
   const instrumentCluster = document.querySelector('.instrument-cluster');
   const stopwatchEl = document.getElementById('stopwatchEl');
   const speedStack = document.querySelector('.speed-stack');
@@ -2100,14 +2136,19 @@
     return stage.dataset.view === TIME_CALC_CAR;
   }
 
-  function getCurrentSpeedKmh() {
-    if (!stage.classList.contains('is-running')) return 0;
+  function getTargetSpeedometerKmh() {
+    if (!stage.classList.contains('is-running') && !stage.classList.contains('is-paused')) return 0;
+    if (runStartTime === null) return 0;
     return currentRunSpeedKmS * REFERENCE_KMH / REFERENCE_KM_S;
   }
 
+  function getCurrentSpeedKmh() {
+    return getTargetSpeedometerKmh();
+  }
+
   function speedHandAngle(kmh) {
-    const ratio = Math.min(Math.max(kmh, 0) / SPEEDO_MAX_KMH, 1);
-    return (120 + ratio * 300) + 'deg';
+    const ratio = Math.min(Math.max(kmh, 0) / SPEEDO_NEEDLE_MAX_KMH, 1);
+    return (120 + ratio * SPEEDO_SWEEP_DEG) + 'deg';
   }
 
   function getExactSpeedKmh() {
@@ -2433,14 +2474,27 @@
     if (speedometerEl) speedometerEl.classList.toggle('is-broken', speedCalcMode);
 
     if (speedCalcMode) {
+      displayedSpeedKmh = 0;
+      speedNeedleAnimStartMs = null;
+      speedNeedleFromKmh = 0;
+      speedNeedleToKmh = 0;
       if (instrumentCluster) instrumentCluster.style.setProperty('--hand-speed', '120deg');
       return;
     }
 
-    const kmh = getCurrentSpeedKmh();
-    const rounded = Math.round(kmh);
+    const targetKmh = getTargetSpeedometerKmh();
+    if (speedNeedleAnimStartMs === null || speedNeedleToKmh !== targetKmh) {
+      speedNeedleFromKmh = displayedSpeedKmh;
+      speedNeedleToKmh = targetKmh;
+      speedNeedleAnimStartMs = performance.now();
+    }
+
+    const progress = Math.min(1, (performance.now() - speedNeedleAnimStartMs) / SPEEDO_NEEDLE_RAMP_MS);
+    displayedSpeedKmh = speedNeedleFromKmh + (speedNeedleToKmh - speedNeedleFromKmh) * progress;
+
+    const rounded = Math.round(displayedSpeedKmh);
     if (instrumentCluster) {
-      instrumentCluster.style.setProperty('--hand-speed', speedHandAngle(kmh));
+      instrumentCluster.style.setProperty('--hand-speed', speedHandAngle(displayedSpeedKmh));
     }
     if (speedReadout && speedReadout.textContent !== String(rounded)) {
       speedReadout.textContent = String(rounded);
@@ -2691,6 +2745,10 @@
     runFinishTime = null;
     currentRunSpeedKmS = 0;
     currentRunAnimSpeed = ANIM_SPEED;
+    displayedSpeedKmh = 0;
+    speedNeedleAnimStartMs = null;
+    speedNeedleFromKmh = 0;
+    speedNeedleToKmh = 0;
 
     stage.classList.remove('is-running', 'is-paused');
 
