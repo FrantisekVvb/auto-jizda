@@ -162,6 +162,10 @@ function answerKeypadMarkup() {
     <button type="button" class="answer-keypad-key" data-key="0">0</button>
     <button type="button" class="answer-keypad-key" data-key="backspace" aria-label="Smazat">⌫</button>
   </div>
+  <div class="answer-keypad-actions">
+    <button type="button" class="answer-keypad-action answer-keypad-check" id="answerKeypadCheck" data-key="submit" aria-label="Ověřit odpověď">✓</button>
+    <button type="button" class="answer-keypad-action answer-keypad-close" id="answerKeypadClose" data-key="close" aria-label="Zavřít klávesnici">×</button>
+  </div>
 </div>`;
 }
 
@@ -214,7 +218,6 @@ function clockMarkup() {
         <div class="speed-answer-panel" id="speedAnswerRow">
           <input type="text" class="speed-answer-input" id="speedAnswerInput" readonly inputmode="none" autocomplete="off" aria-label="Odpověď v kilometrech za hodinu" />
           ${kmhFractionMarkup()}
-          <button type="button" class="speed-check-btn" id="speedCheckBtn" aria-label="Ověřit odpověď">✓</button>
         </div>
       </div>
       <p class="speed-answer-feedback" id="speedAnswerFeedback" aria-live="polite"></p>
@@ -225,7 +228,6 @@ function clockMarkup() {
         <div class="distance-answer-panel" id="distanceAnswerRow">
           <input type="text" class="distance-answer-input" id="distanceAnswerInput" readonly inputmode="none" autocomplete="off" aria-label="Odpověď v kilometrech" />
           <span>km</span>
-          <button type="button" class="distance-check-btn" id="distanceCheckBtn" aria-label="Ověřit odpověď">✓</button>
         </div>
       </div>
       <p class="distance-answer-feedback" id="distanceAnswerFeedback" aria-live="polite"></p>
@@ -236,7 +238,6 @@ function clockMarkup() {
         <div class="time-answer-panel" id="timeAnswerRow">
           <input type="text" class="time-answer-input" id="timeAnswerInput" readonly inputmode="none" autocomplete="off" aria-label="Odpověď v hodinách" />
           <span>h</span>
-          <button type="button" class="time-check-btn" id="timeCheckBtn" aria-label="Ověřit odpověď">✓</button>
         </div>
       </div>
       <p class="time-answer-feedback" id="timeAnswerFeedback" aria-live="polite"></p>
@@ -1107,6 +1108,20 @@ function buildHtml() {
     .answer-keypad[hidden] {
       display: none !important;
     }
+    body.is-keypad-open .stage,
+    body.is-keypad-open .controls-wrap,
+    body.is-keypad-open .car-picker,
+    body.is-keypad-open .instrument-cluster > .speed-stack,
+    body.is-keypad-open .instrument-cluster .analog-clock,
+    body.is-keypad-open .instrument-cluster .stopwatch,
+    body.is-keypad-open .distance-readout-wrap {
+      filter: blur(4px);
+      transition: filter 0.2s ease;
+    }
+    body.is-keypad-open .controls-wrap,
+    body.is-keypad-open .car-picker {
+      pointer-events: none;
+    }
     .answer-keypad-grid {
       display: grid;
       grid-template-columns: repeat(3, 56px);
@@ -1137,6 +1152,64 @@ function buildHtml() {
     .answer-keypad-key:active:not(:disabled) {
       background: #E5E7EB;
     }
+    .answer-keypad-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .answer-keypad-action {
+      appearance: none;
+      height: 48px;
+      border: 1px solid #111827;
+      background: #fff;
+      color: #111827;
+      border-radius: 12px;
+      font: 700 20px/1 system-ui, -apple-system, sans-serif;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .answer-keypad-action:hover:not(:disabled) {
+      background: #F3F4F6;
+      border-color: #374151;
+    }
+    .answer-keypad-action:active:not(:disabled) {
+      background: #E5E7EB;
+    }
+    .answer-keypad-check.is-correct {
+      border-color: #15803D;
+      background: #16A34A;
+      color: #fff;
+    }
+    .answer-keypad-check.is-correct:hover:not(:disabled) {
+      background: #15803D;
+      border-color: #166534;
+    }
+    .answer-keypad-check.is-approximate {
+      border-color: #EA580C;
+      background: #F97316;
+      color: #fff;
+    }
+    .answer-keypad-check.is-approximate:hover:not(:disabled) {
+      background: #EA580C;
+      border-color: #C2410C;
+    }
+    .answer-keypad-check.is-wrong {
+      border-color: #B91C1C;
+      background: #DC2626;
+      color: #fff;
+    }
+    .answer-keypad-check.is-wrong:hover:not(:disabled) {
+      background: #B91C1C;
+      border-color: #991B1B;
+    }
     @media (pointer: coarse) {
       .answer-keypad-grid {
         grid-template-columns: repeat(3, 60px);
@@ -1144,6 +1217,10 @@ function buildHtml() {
       }
       .answer-keypad-key {
         width: 60px;
+        height: 52px;
+        font-size: 22px;
+      }
+      .answer-keypad-action {
         height: 52px;
         font-size: 22px;
       }
@@ -1333,6 +1410,15 @@ ${cssWheels}
     @media (prefers-reduced-motion: reduce) {
       .road-scroll, .wheel-spin, .vegetation-item { animation: none !important; }
       .jet-flame { animation: none !important; }
+      body.is-keypad-open .stage,
+      body.is-keypad-open .controls-wrap,
+      body.is-keypad-open .car-picker,
+      body.is-keypad-open .instrument-cluster > .speed-stack,
+      body.is-keypad-open .instrument-cluster .analog-clock,
+      body.is-keypad-open .instrument-cluster .stopwatch,
+      body.is-keypad-open .distance-readout-wrap {
+        transition: none;
+      }
     }
   </style>
 </head>
@@ -1462,8 +1548,8 @@ ${buttons}
   const speedStack = document.querySelector('.speed-stack');
   const speedometerEl = document.querySelector('.speedometer');
   const speedQuestionPanel = document.getElementById('speedQuestionPanel');
+  const speedQuestionText = document.getElementById('speedQuestionText');
   const speedAnswerInput = document.getElementById('speedAnswerInput');
-  const speedCheckBtn = document.getElementById('speedCheckBtn');
   const speedAnswerRow = document.getElementById('speedAnswerRow');
   const speedAnswerFeedback = document.getElementById('speedAnswerFeedback');
   const distanceReadoutEl = document.getElementById('distanceReadoutEl');
@@ -1471,17 +1557,16 @@ ${buttons}
   const distanceQuestionPanel = document.getElementById('distanceQuestionPanel');
   const distanceQuestionText = document.getElementById('distanceQuestionText');
   const distanceAnswerInput = document.getElementById('distanceAnswerInput');
-  const distanceCheckBtn = document.getElementById('distanceCheckBtn');
   const distanceAnswerRow = document.getElementById('distanceAnswerRow');
   const distanceAnswerFeedback = document.getElementById('distanceAnswerFeedback');
   const speedReadout = document.getElementById('speedReadout');
   const timeQuestionPanel = document.getElementById('timeQuestionPanel');
   const timeQuestionText = document.getElementById('timeQuestionText');
   const timeAnswerInput = document.getElementById('timeAnswerInput');
-  const timeCheckBtn = document.getElementById('timeCheckBtn');
   const timeAnswerRow = document.getElementById('timeAnswerRow');
   const timeAnswerFeedback = document.getElementById('timeAnswerFeedback');
   const answerKeypad = document.getElementById('answerKeypad');
+  const answerKeypadCheck = document.getElementById('answerKeypadCheck');
   const answerInputs = [speedAnswerInput, distanceAnswerInput, timeAnswerInput].filter(Boolean);
   let activeAnswerInput = null;
   const SPEED_CALC_CAR = '1';
@@ -1578,15 +1663,58 @@ ${buttons}
     input.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
+  function syncKeypadCheckFeedback(className) {
+    if (!answerKeypadCheck) return;
+    answerKeypadCheck.classList.remove('is-correct', 'is-approximate', 'is-wrong');
+    if (className) answerKeypadCheck.classList.add(className);
+  }
+
+  function getAnswerRowForInput(input) {
+    if (input === speedAnswerInput) return speedAnswerRow;
+    if (input === distanceAnswerInput) return distanceAnswerRow;
+    if (input === timeAnswerInput) return timeAnswerRow;
+    return null;
+  }
+
+  function getAnswerRowFeedbackClass(rowEl) {
+    if (!rowEl) return null;
+    if (rowEl.classList.contains('is-correct')) return 'is-correct';
+    if (rowEl.classList.contains('is-approximate')) return 'is-approximate';
+    if (rowEl.classList.contains('is-wrong')) return 'is-wrong';
+    return null;
+  }
+
+  function syncKeypadCheckFromInput(input) {
+    if (!input || !input.value.trim()) {
+      syncKeypadCheckFeedback(null);
+      return;
+    }
+    syncKeypadCheckFeedback(getAnswerRowFeedbackClass(getAnswerRowForInput(input)));
+  }
+
+  function setKeypadOpen(open) {
+    document.body.classList.toggle('is-keypad-open', open);
+  }
+
   function hideAnswerKeypad() {
     activeAnswerInput = null;
+    syncKeypadCheckFeedback(null);
     if (answerKeypad) answerKeypad.hidden = true;
+    setKeypadOpen(false);
+  }
+
+  function submitActiveAnswer() {
+    if (activeAnswerInput === speedAnswerInput) verifySpeedAnswer();
+    else if (activeAnswerInput === distanceAnswerInput) verifyDistanceAnswer();
+    else if (activeAnswerInput === timeAnswerInput) verifyTimeAnswer();
   }
 
   function showAnswerKeypad(input) {
     if (!answerKeypad || !input || input.disabled) return;
     activeAnswerInput = input;
     answerKeypad.hidden = false;
+    setKeypadOpen(true);
+    syncKeypadCheckFromInput(input);
   }
 
   function handleAnswerKeypadKey(key) {
@@ -1617,18 +1745,30 @@ ${buttons}
       answerKeypad.addEventListener('click', (event) => {
         const btn = event.target.closest('[data-key]');
         if (!btn) return;
-        handleAnswerKeypadKey(btn.getAttribute('data-key'));
+        const key = btn.getAttribute('data-key');
+        if (key === 'submit') {
+          submitActiveAnswer();
+          return;
+        }
+        if (key === 'close') {
+          hideAnswerKeypad();
+          return;
+        }
+        handleAnswerKeypadKey(key);
       });
     }
     answerInputs.forEach((input) => {
+      input.addEventListener('pointerdown', (event) => {
+        event.stopPropagation();
+        showAnswerKeypad(input);
+      });
       input.addEventListener('focus', () => showAnswerKeypad(input));
-      input.addEventListener('click', () => showAnswerKeypad(input));
     });
     document.addEventListener('pointerdown', (event) => {
       if (!answerKeypad || answerKeypad.hidden) return;
       const target = event.target;
       if (answerKeypad.contains(target)) return;
-      if (answerInputs.some((input) => input === target)) return;
+      if (answerInputs.some((input) => input === target || input.contains(target))) return;
       hideAnswerKeypad();
     });
   }
@@ -1660,6 +1800,7 @@ ${buttons}
       feedbackEl.classList.remove('is-correct', 'is-approximate', 'is-wrong');
       feedbackEl.classList.add(className);
     }
+    syncKeypadCheckFeedback(className);
   }
 
   function clearSpeedAnswerFeedback() {
@@ -1670,6 +1811,7 @@ ${buttons}
       speedAnswerFeedback.textContent = '';
       speedAnswerFeedback.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
+    if (activeAnswerInput === speedAnswerInput) syncKeypadCheckFeedback(null);
   }
 
   function verifySpeedAnswer() {
@@ -1688,11 +1830,13 @@ ${buttons}
     if (speedQuestionPanel) {
       speedQuestionPanel.classList.toggle('is-visible', show);
     }
+    if (speedQuestionText) {
+      speedQuestionText.textContent = finished
+        ? 'Jakou rychlostí auto jelo?'
+        : 'Jakou rychlostí auto jede?';
+    }
     if (speedAnswerInput) {
       speedAnswerInput.disabled = !show;
-    }
-    if (speedCheckBtn) {
-      speedCheckBtn.disabled = !show;
     }
     if (!show) {
       clearSpeedAnswerFeedback();
@@ -1716,6 +1860,7 @@ ${buttons}
       distanceAnswerFeedback.textContent = '';
       distanceAnswerFeedback.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
+    if (activeAnswerInput === distanceAnswerInput) syncKeypadCheckFeedback(null);
   }
 
   function verifyDistanceAnswer() {
@@ -1742,9 +1887,6 @@ ${buttons}
     if (distanceAnswerInput) {
       distanceAnswerInput.disabled = !show;
     }
-    if (distanceCheckBtn) {
-      distanceCheckBtn.disabled = !show;
-    }
     if (!show) {
       clearDistanceAnswerFeedback();
       if (activeAnswerInput === distanceAnswerInput) hideAnswerKeypad();
@@ -1767,6 +1909,7 @@ ${buttons}
       timeAnswerFeedback.textContent = '';
       timeAnswerFeedback.classList.remove('is-correct', 'is-approximate', 'is-wrong');
     }
+    if (activeAnswerInput === timeAnswerInput) syncKeypadCheckFeedback(null);
   }
 
   function verifyTimeAnswer() {
@@ -1792,9 +1935,6 @@ ${buttons}
     }
     if (timeAnswerInput) {
       timeAnswerInput.disabled = !show;
-    }
-    if (timeCheckBtn) {
-      timeCheckBtn.disabled = !show;
     }
     if (!show) {
       clearTimeAnswerFeedback();
@@ -2162,6 +2302,7 @@ ${buttons}
     setSpeedControlsEnabled(false);
     setHoursControlsEnabled(false);
     carButtons.forEach((btn) => { btn.disabled = true; });
+    updateSpeedQuestionPanel();
     updateDistanceQuestionPanel();
     updateTimeQuestionPanel();
   }
@@ -2420,20 +2561,11 @@ ${buttons}
     });
   });
 
-  if (speedCheckBtn) {
-    speedCheckBtn.addEventListener('click', verifySpeedAnswer);
-  }
   if (speedAnswerInput) {
     speedAnswerInput.addEventListener('input', clearSpeedAnswerFeedback);
   }
-  if (distanceCheckBtn) {
-    distanceCheckBtn.addEventListener('click', verifyDistanceAnswer);
-  }
   if (distanceAnswerInput) {
     distanceAnswerInput.addEventListener('input', clearDistanceAnswerFeedback);
-  }
-  if (timeCheckBtn) {
-    timeCheckBtn.addEventListener('click', verifyTimeAnswer);
   }
   if (timeAnswerInput) {
     timeAnswerInput.addEventListener('input', clearTimeAnswerFeedback);
