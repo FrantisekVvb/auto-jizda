@@ -28,7 +28,7 @@ Interaktivní webová simulace jízdy autem pro procvičování úloh na rychlos
 ## Lokální spuštění
 
 ```bash
-git clone https://github.com/frantisekvvb/auto-jizda.git
+git clone https://github.com/FrantisekVvb/auto-jizda.git
 cd auto-jizda
 npm run dev
 ```
