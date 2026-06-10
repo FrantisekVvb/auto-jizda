@@ -1,0 +1,21 @@
+{
+  "name": "auto-jizda",
+  "version": "1.0.0",
+  "description": "Interaktivní simulace jízdy autem — výpočet rychlosti, vzdálenosti a času",
+  "license": "MIT",
+  "keywords": [
+    "simulation",
+    "education",
+    "math",
+    "physics",
+    "czech"
+  ],
+  "scripts": {
+    "build": "node generate-car-animation.cjs",
+    "start": "npx --yes serve .",
+    "dev": "npm run build && npm start"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
