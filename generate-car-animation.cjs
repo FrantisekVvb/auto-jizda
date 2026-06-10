@@ -1242,6 +1242,9 @@ function buildHtml() {
       inset: 0;
       overflow: hidden;
       z-index: 0;
+      isolation: isolate;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
     }
     .road-scroll {
       position: absolute;
@@ -1251,8 +1254,8 @@ function buildHtml() {
       width: max-content;
       height: 100%;
       will-change: transform;
-      transform: translate3d(0, 0, 0);
       backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
       z-index: 0;
     }
     .signs-layer {
@@ -1295,11 +1298,14 @@ function buildHtml() {
       height: 100%;
       flex-shrink: 0;
     }
+    .scenery-unit + .scenery-unit {
+      margin-left: -1px;
+    }
     .road {
       position: absolute;
-      left: 0;
+      left: -1px;
       top: var(--road-y);
-      width: 100%;
+      width: calc(100% + 2px);
       height: var(--road-h);
       background: #111827;
     }
@@ -1587,8 +1593,38 @@ ${buttons}
     return (vw / 2) + CAR_OFFSET_X - (CAR_W_JS / 2) + FRONT_WHEEL_X_JS;
   }
 
+  function parseInlineTranslateX(scroll) {
+    const transform = scroll.style.transform;
+    if (!transform) return null;
+    const match = transform.match(/translate3d\\(\\s*([-\\d.]+)px/);
+    return match ? parseFloat(match[1]) : null;
+  }
+
   function getRoadScrollOffsetPx(scroll) {
     if (!scroll) return 0;
+
+    if (scroll.style.animation === 'none') {
+      const inline = parseInlineTranslateX(scroll);
+      if (inline !== null) return inline;
+    }
+
+    const anims = scroll.getAnimations();
+    for (let i = 0; i < anims.length; i++) {
+      const effect = anims[i].effect;
+      if (!effect || typeof effect.getComputedTiming !== 'function') continue;
+      const timing = effect.getComputedTiming();
+      const duration = timing.duration;
+      const currentTime = timing.currentTime;
+      const iterationProgress = timing.progress;
+      if (!duration || !Number.isFinite(duration) || duration <= 0) continue;
+      if (currentTime === null || !Number.isFinite(currentTime)) continue;
+      if (iterationProgress === null || !Number.isFinite(iterationProgress)) continue;
+      const loopWidthPx = window.innerWidth * (${SCROLL_LOOP_VW} / 100);
+      if (!loopWidthPx) continue;
+      const completedIterations = Math.floor(currentTime / duration);
+      return -(completedIterations + iterationProgress) * loopWidthPx;
+    }
+
     const transform = getComputedStyle(scroll).transform;
     if (transform === 'none') return 0;
     return new DOMMatrix(transform).m41;
@@ -1600,10 +1636,26 @@ ${buttons}
     if (!scroll) return baseKm;
     const loopWidthPx = window.innerWidth * (${SCROLL_LOOP_VW} / 100);
     if (!loopWidthPx) return baseKm;
+
     const offsetPx = getRoadScrollOffsetPx(scroll);
-    if (!stage.classList.contains('is-running') && offsetPx === 0) return baseKm;
-    const progress = ((-offsetPx % loopWidthPx) + loopWidthPx) % loopWidthPx / loopWidthPx;
-    return baseKm + progress * KM_PER_LOOP;
+    if (
+      !stage.classList.contains('is-running')
+      && !stage.classList.contains('is-paused')
+      && offsetPx === 0
+    ) {
+      return baseKm;
+    }
+
+    const scrolledPx = Math.max(0, -offsetPx);
+    const km = baseKm + (scrolledPx / loopWidthPx) * KM_PER_LOOP;
+
+    if (
+      runStartTime !== null
+      && (stage.classList.contains('is-running') || stage.classList.contains('is-paused'))
+    ) {
+      return Math.min(km, targetTravelKm);
+    }
+    return km;
   }
 
   function handAngle(revolutions) {
@@ -2126,6 +2178,10 @@ ${buttons}
     const delaySec = baseDelay / currentRunAnimSpeed;
 
     lane.querySelectorAll('.road-scroll, .wheel-spin').forEach((el) => {
+      el.style.animation = 'none';
+      el.style.transform = '';
+      void el.offsetWidth;
+      el.style.animation = '';
       el.style.animationDuration = (el.classList.contains('road-scroll') ? driveSec : wheelsSec).toFixed(4) + 's';
       el.style.animationDelay = delaySec.toFixed(4) + 's';
       el.style.animationTimingFunction = 'linear';
@@ -2240,12 +2296,13 @@ ${buttons}
     setTargetKm(DEFAULT_TARGET_DISPLAY_KM);
     setTargetSpeed(DEFAULT_TARGET_SPEED_KMH);
     setTargetHours(DEFAULT_TARGET_HOURS);
-    carButtons.forEach((btn, i) => {
-      btn.classList.toggle('active', i === 0);
+    const activeCar = stage.dataset.view || carButtons[0]?.dataset.car;
+    carButtons.forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.car === activeCar);
       btn.disabled = false;
     });
-    if (carButtons.length) {
-      stage.dataset.view = carButtons[0].dataset.car;
+    if (activeCar) {
+      stage.dataset.view = activeCar;
     }
 
     startBtn.disabled = false;
@@ -2309,11 +2366,11 @@ ${buttons}
 
   function updateClock() {
     const km = getTravelKm();
-    updateKmSigns();
+    updateKmSigns(km);
     updateDistanceReadout();
     updateSpeedometer();
     updateStopwatch();
-    if (stage.classList.contains('is-running') && getTravelKm() >= targetTravelKm) {
+    if (stage.classList.contains('is-running') && km >= targetTravelKm) {
       stopAtDestination();
     }
     if (updateAnalogClock() && instrumentCluster) {
@@ -2330,10 +2387,10 @@ ${buttons}
     return 16;
   }
 
-  function updateKmSigns() {
+  function updateKmSigns(travelKm) {
     const lane = getActiveLane();
     if (!lane) return;
-    const travelKm = getTravelKm();
+    if (travelKm === undefined) travelKm = getTravelKm();
     const vw = window.innerWidth;
     const frontWheelPx = getFrontWheelLeftPx();
     const signWidthVw = (SIGN_W / vw) * 100;
