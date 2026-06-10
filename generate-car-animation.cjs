@@ -22,12 +22,19 @@ const SIGN_HALF_W = SIGN_W / 2;
 const SIGN_TOP_OFFSET = 116;
 const DEFAULT_TARGET_DISPLAY_KM = 60;
 const MIN_TARGET_DISPLAY_KM = 10;
+const TARGET_KM_STEP = 10;
 const DEFAULT_TARGET_HOURS = 1;
 const MIN_TARGET_HOURS = 0.5;
+const MAX_TARGET_HOURS = 99;
+const TARGET_HOURS_STEP = 0.5;
 const REFERENCE_KMH = 60;
 const REFERENCE_KM_S = 6;
 const JET_ENGINE_MIN_SPEED_KM_S = 20;
 const ANIM_SPEED = 3;
+
+function formatDecimalComma(value) {
+  return String(value).replace('.', ',');
+}
 
 function animDurationSec(value) {
   return `${parseFloat(value) / ANIM_SPEED}s`;
@@ -673,23 +680,56 @@ function buildHtml() {
     .clock-hand-second {
       transform: rotate(var(--hand-sec, 0deg));
     }
-    .controls {
+    .controls-wrap {
       position: fixed;
       left: 50%;
       bottom: 24px;
       transform: translateX(-50%);
       display: flex;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       gap: 8px;
       max-width: calc(100vw - 32px);
+      z-index: 10;
+    }
+    .controls {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      width: 100%;
       padding: 10px 12px;
       background: rgba(255, 255, 255, 0.92);
       border: 1px solid #E5E7EB;
       border-radius: 14px;
       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-      z-index: 10;
+    }
+    .controls-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .setting-panel {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      width: 100%;
+    }
+    .setting-panel .distance-field {
+      flex: 1;
+      min-width: 0;
+    }
+    .setting-steppers {
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .controls-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
     }
     .car-picker {
       position: fixed;
@@ -791,6 +831,13 @@ function buildHtml() {
       align-items: center;
       gap: 6px;
     }
+    .var-equals {
+      font: 600 13px/1.2 system-ui, -apple-system, sans-serif;
+      color: #374151;
+    }
+    .var-equals em {
+      font-style: italic;
+    }
     .distance-field input {
       width: 76px;
       border: 1px solid #D1D5DB;
@@ -806,7 +853,46 @@ function buildHtml() {
       border-color: #60A5FA;
     }
     .distance-field input.time-part {
-      width: 52px;
+      width: 48px;
+      padding-left: 6px;
+      padding-right: 6px;
+      cursor: default;
+    }
+    .value-step-btn {
+      appearance: none;
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border: 1px solid #D1D5DB;
+      background: #F9FAFB;
+      color: #111827;
+      border-radius: 10px;
+      font: 700 20px/1 system-ui, -apple-system, sans-serif;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .value-step-btn:hover:not(:disabled) {
+      background: #F3F4F6;
+      border-color: #9CA3AF;
+    }
+    .value-step-btn:active:not(:disabled) {
+      background: #E5E7EB;
+    }
+    .value-step-btn:disabled {
+      opacity: 0.55;
+      cursor: default;
+    }
+    @media (pointer: coarse) {
+      .value-step-btn {
+        width: 44px;
+        height: 44px;
+      }
     }
     .distance-field input:disabled {
       opacity: 0.55;
@@ -1004,24 +1090,44 @@ ${clockMarkup()}
 ${lanes}
 </div>
 
+<div class="controls-wrap">
 <nav class="controls" aria-label="Ovládání animace">
-    <label class="distance-field" for="targetKmInput">
-      <span class="distance-field-label">Cíl</span>
-      <span class="distance-field-row">
-        <input type="number" id="targetKmInput" min="${MIN_TARGET_DISPLAY_KM}" step="10" value="${DEFAULT_TARGET_DISPLAY_KM}" aria-label="Cílová vzdálenost v kilometrech" />
-        <span>km</span>
-      </span>
-    </label>
-    <label class="distance-field" for="targetHoursInput">
-      <span class="distance-field-label">Čas</span>
-      <span class="distance-field-row">
-        <input type="number" class="time-part" id="targetHoursInput" min="${MIN_TARGET_HOURS}" max="99" step="0.5" value="${DEFAULT_TARGET_HOURS}" aria-label="Hodiny na stopkách" />
-        <span>h</span>
-      </span>
-    </label>
+  <div class="controls-fields">
+    <div class="setting-panel" aria-label="Nastavení cíle">
+      <div class="distance-field">
+        <span class="distance-field-label">Cíl</span>
+        <span class="distance-field-row">
+          <span class="var-equals" aria-hidden="true"><em>s</em> =</span>
+          <input type="text" id="targetKmInput" value="${DEFAULT_TARGET_DISPLAY_KM}" readonly tabindex="-1" aria-label="Cílová vzdálenost v kilometrech" aria-live="polite" />
+          <span>km</span>
+        </span>
+      </div>
+      <div class="setting-steppers">
+        <button type="button" class="value-step-btn" id="targetKmDec" aria-label="Zkrátit cíl o 10 kilometrů">−</button>
+        <button type="button" class="value-step-btn" id="targetKmInc" aria-label="Prodloužit cíl o 10 kilometrů">+</button>
+      </div>
+    </div>
+    <div class="setting-panel" aria-label="Nastavení času">
+      <div class="distance-field">
+        <span class="distance-field-label">Čas</span>
+        <span class="distance-field-row">
+          <span class="var-equals" aria-hidden="true"><em>t</em> =</span>
+          <input type="text" class="time-part" id="targetHoursInput" value="${formatDecimalComma(DEFAULT_TARGET_HOURS)}" readonly tabindex="-1" aria-label="Hodiny na stopkách" aria-live="polite" />
+          <span>h</span>
+        </span>
+      </div>
+      <div class="setting-steppers">
+        <button type="button" class="value-step-btn" id="targetHoursDec" aria-label="Zkrátit čas o půl hodiny">−</button>
+        <button type="button" class="value-step-btn" id="targetHoursInc" aria-label="Prodloužit čas o půl hodiny">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="controls-actions">
     <button type="button" class="start-btn" id="startBtn">Spustit</button>
     <button type="button" class="pause-btn" id="pauseBtn" disabled>Pauza</button>
+  </div>
 </nav>
+</div>
 
 <nav class="car-picker" aria-label="Výběr auta">
 ${buttons}
@@ -1032,12 +1138,19 @@ ${buttons}
   const startBtn = document.getElementById('startBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const targetKmInput = document.getElementById('targetKmInput');
+  const targetKmDec = document.getElementById('targetKmDec');
+  const targetKmInc = document.getElementById('targetKmInc');
   const targetHoursInput = document.getElementById('targetHoursInput');
+  const targetHoursDec = document.getElementById('targetHoursDec');
+  const targetHoursInc = document.getElementById('targetHoursInc');
   const carButtons = document.querySelectorAll('.car-btn');
   const MIN_TARGET_DISPLAY_KM = ${MIN_TARGET_DISPLAY_KM};
+  const TARGET_KM_STEP = ${TARGET_KM_STEP};
   const DEFAULT_TARGET_DISPLAY_KM = ${DEFAULT_TARGET_DISPLAY_KM};
   const DEFAULT_TARGET_HOURS = ${DEFAULT_TARGET_HOURS};
   const MIN_TARGET_HOURS = ${MIN_TARGET_HOURS};
+  const MAX_TARGET_HOURS = ${MAX_TARGET_HOURS};
+  const TARGET_HOURS_STEP = ${TARGET_HOURS_STEP};
   const REFERENCE_KMH = ${REFERENCE_KMH};
   const REFERENCE_KM_S = ${REFERENCE_KM_S};
   const JET_ENGINE_MIN_SPEED_KM_S = ${JET_ENGINE_MIN_SPEED_KM_S};
@@ -1234,21 +1347,58 @@ ${buttons}
     });
   }
 
+  function setTargetKm(km) {
+    const clamped = Math.max(
+      MIN_TARGET_DISPLAY_KM,
+      Math.round(km / TARGET_KM_STEP) * TARGET_KM_STEP
+    );
+    if (targetKmInput) targetKmInput.value = String(clamped);
+    return clamped;
+  }
+
+  function setKmControlsEnabled(enabled) {
+    if (targetKmInput) targetKmInput.disabled = !enabled;
+    if (targetKmDec) targetKmDec.disabled = !enabled;
+    if (targetKmInc) targetKmInc.disabled = !enabled;
+  }
+
   function getTargetDisplayKm() {
-    const raw = Number(targetKmInput.value);
-    if (!Number.isFinite(raw)) return DEFAULT_TARGET_DISPLAY_KM;
-    return Math.max(MIN_TARGET_DISPLAY_KM, Math.round(raw));
+    const raw = Number(targetKmInput && targetKmInput.value);
+    if (!Number.isFinite(raw)) {
+      return setTargetKm(DEFAULT_TARGET_DISPLAY_KM);
+    }
+    return setTargetKm(raw);
+  }
+
+  function formatHoursDisplay(hours) {
+    return String(hours).replace('.', ',');
+  }
+
+  function parseHoursInput(value) {
+    return Number(String(value).replace(',', '.'));
+  }
+
+  function setTargetHours(hours) {
+    const clamped = Math.max(
+      MIN_TARGET_HOURS,
+      Math.min(MAX_TARGET_HOURS, Math.round(hours * 2) / 2)
+    );
+    if (targetHoursInput) targetHoursInput.value = formatHoursDisplay(clamped);
+    return clamped;
+  }
+
+  function setHoursControlsEnabled(enabled) {
+    if (targetHoursInput) targetHoursInput.disabled = !enabled;
+    if (targetHoursDec) targetHoursDec.disabled = !enabled;
+    if (targetHoursInc) targetHoursInc.disabled = !enabled;
   }
 
   function getTargetStopwatchHours() {
-    const raw = Number(targetHoursInput.value);
+    const raw = parseHoursInput(targetHoursInput && targetHoursInput.value);
     if (!Number.isFinite(raw)) {
-      targetHoursInput.value = DEFAULT_TARGET_HOURS;
-      return DEFAULT_TARGET_HOURS;
+      return setTargetHours(DEFAULT_TARGET_HOURS);
     }
-    const hours = Math.max(MIN_TARGET_HOURS, Math.round(raw * 2) / 2);
-    targetHoursInput.value = hours;
-    return hours;
+    return setTargetHours(raw);
   }
 
   function getRequiredRealSpeedKmS() {
@@ -1397,8 +1547,8 @@ ${buttons}
       vegTimer = null;
     }
 
-    targetKmInput.value = DEFAULT_TARGET_DISPLAY_KM;
-    targetHoursInput.value = DEFAULT_TARGET_HOURS;
+    setTargetKm(DEFAULT_TARGET_DISPLAY_KM);
+    setTargetHours(DEFAULT_TARGET_HOURS);
     carButtons.forEach((btn, i) => {
       btn.classList.toggle('active', i === 0);
       btn.disabled = false;
@@ -1411,8 +1561,8 @@ ${buttons}
     startBtn.textContent = 'Spustit';
     pauseBtn.disabled = true;
     pauseBtn.textContent = 'Pauza';
-    targetKmInput.disabled = false;
-    targetHoursInput.disabled = false;
+    setKmControlsEnabled(true);
+    setHoursControlsEnabled(true);
     if (speedAnswerInput) speedAnswerInput.value = '';
     clearSpeedAnswerFeedback();
 
@@ -1447,8 +1597,8 @@ ${buttons}
     startBtn.textContent = 'Zpět na start';
     pauseBtn.disabled = true;
     pauseBtn.textContent = 'Pauza';
-    targetKmInput.disabled = true;
-    targetHoursInput.disabled = true;
+    setKmControlsEnabled(false);
+    setHoursControlsEnabled(false);
     carButtons.forEach((btn) => { btn.disabled = true; });
   }
 
@@ -1591,7 +1741,6 @@ ${buttons}
       return;
     }
     const targetDisplayKm = getTargetDisplayKm();
-    targetKmInput.value = targetDisplayKm;
     targetTravelKm = targetDisplayKm;
     getTargetStopwatchHours();
     applyRunSpeed(getRequiredRealSpeedKmS());
@@ -1608,11 +1757,32 @@ ${buttons}
     startBtn.textContent = 'Zpět na start';
     pauseBtn.disabled = false;
     pauseBtn.textContent = 'Pauza';
-    targetKmInput.disabled = true;
-    targetHoursInput.disabled = true;
+    setKmControlsEnabled(false);
+    setHoursControlsEnabled(false);
     carButtons.forEach((btn) => { btn.disabled = true; });
     startVegetation();
   });
+
+  if (targetKmDec) {
+    targetKmDec.addEventListener('click', () => {
+      setTargetKm(Number(targetKmInput.value) - TARGET_KM_STEP);
+    });
+  }
+  if (targetKmInc) {
+    targetKmInc.addEventListener('click', () => {
+      setTargetKm(Number(targetKmInput.value) + TARGET_KM_STEP);
+    });
+  }
+  if (targetHoursDec) {
+    targetHoursDec.addEventListener('click', () => {
+      setTargetHours(parseHoursInput(targetHoursInput.value) - TARGET_HOURS_STEP);
+    });
+  }
+  if (targetHoursInc) {
+    targetHoursInc.addEventListener('click', () => {
+      setTargetHours(parseHoursInput(targetHoursInput.value) + TARGET_HOURS_STEP);
+    });
+  }
 
   pauseBtn.addEventListener('click', () => {
     if (paused) resumeRun();
