@@ -798,8 +798,7 @@ function buildHtml() {
     .distance-readout-unit {
       display: block;
       font: 600 10px/1 system-ui, -apple-system, sans-serif;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing: 0.02em;
       color: #6B7280;
     }
     .instrument-cluster .analog-clock {
