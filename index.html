@@ -41,30 +41,61 @@
       z-index: 5;
       pointer-events: none;
     }
-    .speed-question-panel {
-      display: none;
+    .hud-question-slot {
       position: absolute;
-      top: 4px;
-      right: calc(100% + 12px);
+      top: calc(100% + 40px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      width: max-content;
+      max-width: min(380px, calc(100vw - 48px));
+      pointer-events: none;
+    }
+    .hud-question-slot .speed-question-panel,
+    .hud-question-slot .distance-question-panel,
+    .hud-question-slot .time-question-panel {
+      pointer-events: auto;
+    }
+    .speed-question-panel,
+    .distance-question-panel,
+    .time-question-panel {
+      display: none;
       flex-direction: column;
       gap: 8px;
-      width: 210px;
+      width: max-content;
+      max-width: min(380px, calc(100vw - 48px));
       padding: 10px 12px;
       background: rgba(255, 255, 255, 0.94);
       border: 1px solid #E5E7EB;
       border-radius: 12px;
       box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-      pointer-events: auto;
     }
-    .speed-question-panel.is-visible {
+    .speed-question-panel.is-visible,
+    .distance-question-panel.is-visible,
+    .time-question-panel.is-visible {
       display: flex;
     }
-    .speed-question-text {
+    .calc-question-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .speed-question-text,
+    .distance-question-text,
+    .time-question-text {
+      flex-shrink: 0;
+    }
+    .speed-question-text,
+    .distance-question-text,
+    .time-question-text {
       margin: 0;
       font: 600 13px/1.35 system-ui, -apple-system, sans-serif;
       color: #111827;
     }
-    .speed-answer-panel {
+    .speed-answer-panel,
+    .distance-answer-panel,
+    .time-answer-panel {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -93,7 +124,9 @@
       margin-left: 4px;
       font-size: 0.72em;
     }
-    .speed-check-btn {
+    .speed-check-btn,
+    .distance-check-btn,
+    .time-check-btn {
       appearance: none;
       flex-shrink: 0;
       width: 28px;
@@ -110,51 +143,75 @@
       padding: 0;
       transition: background 0.15s, border-color 0.15s, color 0.15s;
     }
-    .speed-check-btn:hover:not(:disabled) {
+    .speed-check-btn:hover:not(:disabled),
+    .distance-check-btn:hover:not(:disabled),
+    .time-check-btn:hover:not(:disabled) {
       background: #F3F4F6;
       border-color: #374151;
     }
-    .speed-check-btn:disabled {
+    .speed-check-btn:disabled,
+    .distance-check-btn:disabled,
+    .time-check-btn:disabled {
       opacity: 0.55;
       cursor: default;
     }
-    .speed-answer-panel.is-correct .speed-check-btn {
+    .speed-answer-panel.is-correct .speed-check-btn,
+    .distance-answer-panel.is-correct .distance-check-btn,
+    .time-answer-panel.is-correct .time-check-btn {
       border-color: #15803D;
       background: #16A34A;
       color: #fff;
     }
-    .speed-answer-panel.is-correct .speed-check-btn:hover:not(:disabled) {
+    .speed-answer-panel.is-correct .speed-check-btn:hover:not(:disabled),
+    .distance-answer-panel.is-correct .distance-check-btn:hover:not(:disabled),
+    .time-answer-panel.is-correct .time-check-btn:hover:not(:disabled) {
       background: #15803D;
       border-color: #166534;
     }
-    .speed-answer-panel.is-wrong .speed-check-btn {
+    .speed-answer-panel.is-wrong .speed-check-btn,
+    .distance-answer-panel.is-wrong .distance-check-btn,
+    .time-answer-panel.is-wrong .time-check-btn {
       border-color: #B91C1C;
       background: #DC2626;
       color: #fff;
     }
-    .speed-answer-panel.is-wrong .speed-check-btn:hover:not(:disabled) {
+    .speed-answer-panel.is-wrong .speed-check-btn:hover:not(:disabled),
+    .distance-answer-panel.is-wrong .distance-check-btn:hover:not(:disabled),
+    .time-answer-panel.is-wrong .time-check-btn:hover:not(:disabled) {
       background: #B91C1C;
       border-color: #991B1B;
     }
-    .speed-answer-feedback {
+    .speed-answer-feedback,
+    .distance-answer-feedback,
+    .time-answer-feedback {
       margin: 0;
       min-height: 1.1em;
       font: 600 12px/1.3 system-ui, -apple-system, sans-serif;
       color: #6B7280;
     }
-    .speed-answer-panel.is-correct .speed-answer-input {
+    .speed-answer-panel.is-correct .speed-answer-input,
+    .distance-answer-panel.is-correct .distance-answer-input,
+    .time-answer-panel.is-correct .time-answer-input {
       border-color: #16A34A;
     }
-    .speed-answer-panel.is-wrong .speed-answer-input {
+    .speed-answer-panel.is-wrong .speed-answer-input,
+    .distance-answer-panel.is-wrong .distance-answer-input,
+    .time-answer-panel.is-wrong .time-answer-input {
       border-color: #DC2626;
     }
-    .speed-answer-feedback.is-correct {
+    .speed-answer-feedback.is-correct,
+    .distance-answer-feedback.is-correct,
+    .time-answer-feedback.is-correct {
       color: #15803D;
     }
-    .speed-answer-feedback.is-wrong {
+    .speed-answer-feedback.is-wrong,
+    .distance-answer-feedback.is-wrong,
+    .time-answer-feedback.is-wrong {
       color: #DC2626;
     }
-    .speed-answer-input {
+    .speed-answer-input,
+    .distance-answer-input,
+    .time-answer-input {
       width: 76px;
       border: 1px solid #D1D5DB;
       border-radius: 8px;
@@ -164,11 +221,15 @@
       text-align: center;
       background: #fff;
     }
-    .speed-answer-input:focus {
+    .speed-answer-input:focus,
+    .distance-answer-input:focus,
+    .time-answer-input:focus {
       outline: 2px solid #93C5FD;
       border-color: #60A5FA;
     }
-    .speed-answer-input:disabled {
+    .speed-answer-input:disabled,
+    .distance-answer-input:disabled,
+    .time-answer-input:disabled {
       opacity: 0.55;
       cursor: default;
       background: #F3F4F6;
@@ -181,6 +242,7 @@
       gap: 12px;
     }
     .clock-stack {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -203,24 +265,67 @@
       font-weight: 600;
       color: #6B7280;
     }
-    .distance-readout {
+    .distance-readout-wrap {
       position: absolute;
-      top: 26px;
+      top: 0;
       left: calc(100% + 12px);
-      font: 700 15px/1.2 system-ui, -apple-system, sans-serif;
-      color: #111827;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.9));
+      display: flex;
+      align-items: center;
+      min-height: var(--clock-size);
+      pointer-events: none;
+    }
+    .distance-readout {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      min-width: 58px;
+      padding: 7px 11px 8px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+      border: 2px solid #111827;
+      border-radius: 14px;
+      box-shadow:
+        0 2px 6px rgba(15, 23, 42, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      transition: filter 0.25s ease, opacity 0.25s ease, border-color 0.25s ease;
+    }
+    .distance-readout.is-broken {
+      filter: grayscale(0.55) saturate(0.65);
+      border-color: #9CA3AF;
+      box-shadow:
+        0 2px 6px rgba(15, 23, 42, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+    .distance-readout-icon {
+      display: block;
+      width: 30px;
+      height: 12px;
+      margin-bottom: 2px;
+      color: #6B7280;
+    }
+    .distance-readout.is-broken .distance-readout-icon {
+      color: #9CA3AF;
+    }
+    .distance-readout.is-broken .distance-readout-value,
+    .distance-readout.is-broken .distance-readout-unit {
+      color: #9CA3AF;
     }
     .distance-readout-value {
-      display: inline-block;
-      min-width: 3ch;
-      text-align: right;
+      display: block;
+      min-width: 2.5ch;
+      text-align: center;
+      font: 700 22px/1.05 system-ui, -apple-system, sans-serif;
       font-variant-numeric: tabular-nums;
+      letter-spacing: -0.03em;
+      color: #111827;
     }
     .distance-readout-unit {
-      font-weight: 600;
+      display: block;
+      font: 600 10px/1 system-ui, -apple-system, sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       color: #6B7280;
     }
     .instrument-cluster .analog-clock {
@@ -228,6 +333,24 @@
       width: var(--clock-size);
       height: var(--clock-size);
       filter: drop-shadow(0 2px 6px rgba(15, 23, 42, 0.12));
+      transition: filter 0.25s ease, opacity 0.25s ease;
+    }
+    .analog-clock .clock-broken-mark {
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .analog-clock.is-broken {
+      filter: grayscale(0.55) saturate(0.65) drop-shadow(0 2px 6px rgba(15, 23, 42, 0.08));
+    }
+    .analog-clock.is-broken .clock-broken-mark {
+      opacity: 1;
+    }
+    .analog-clock.is-broken .clock-hand line {
+      stroke: #9CA3AF;
+      opacity: 0.75;
+    }
+    .clock-stack.time-calc-mode .stopwatch {
+      display: none;
     }
     .instrument-cluster .speedometer {
       display: block;
@@ -260,8 +383,13 @@
     }
     .instrument-cluster .stopwatch {
       display: block;
-      width: 104px;
-      height: 72px;
+      font: 700 13px/1.2 system-ui, -apple-system, sans-serif;
+      color: #C92020;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.9));
     }
     .clock-hand {
       transform-box: view-box;
@@ -289,9 +417,6 @@
       z-index: 10;
     }
     .controls {
-      display: flex;
-      align-items: flex-end;
-      gap: 12px;
       width: 100%;
       padding: 10px 12px;
       background: rgba(255, 255, 255, 0.92);
@@ -303,13 +428,16 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      flex: 1;
+      width: 100%;
     }
     .setting-panel {
       display: flex;
       align-items: flex-end;
       gap: 8px;
       width: 100%;
+    }
+    .setting-panel[hidden] {
+      display: none !important;
     }
     .setting-panel .distance-field {
       flex: 1;
@@ -324,8 +452,9 @@
     }
     .controls-actions {
       display: flex;
+      justify-content: center;
       gap: 8px;
-      flex-shrink: 0;
+      width: 100%;
     }
     .car-picker {
       position: fixed;
@@ -687,19 +816,6 @@
 </head>
 <body>
 <div class="top-hud">
-  <div class="speed-question-panel" id="speedQuestionPanel">
-    <p class="speed-question-text">Jakou rychlostí auto jede?</p>
-    <div class="speed-answer-panel" id="speedAnswerRow">
-      <input type="number" class="speed-answer-input" id="speedAnswerInput" min="0" step="1" inputmode="numeric" aria-label="Odpověď v kilometrech za hodinu" />
-      <span class="unit-fraction" aria-label="kilometrů za hodinu">
-  <span class="unit-fraction-part">km</span>
-  <span class="unit-fraction-bar" aria-hidden="true"></span>
-  <span class="unit-fraction-part">h</span>
-</span>
-      <button type="button" class="speed-check-btn" id="speedCheckBtn" aria-label="Ověřit odpověď">✓</button>
-    </div>
-    <p class="speed-answer-feedback" id="speedAnswerFeedback" aria-live="polite"></p>
-  </div>
   <div class="instrument-cluster" aria-label="Tachometr a hodiny">
   <div class="speed-stack">
   <svg class="speedometer" width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Tachometr">
@@ -735,8 +851,8 @@
 </span></span>
   </div>
   </div>
-  <div class="clock-stack">
-  <svg class="analog-clock" width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div class="clock-stack" id="clockStack">
+  <svg class="analog-clock" id="analogClockEl" width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="40" cy="40" r="37" fill="#FFFFFF" stroke="#111827" stroke-width="2.5"/>
     <line x1="40.00" y1="10.00" x2="40.00" y2="5.00" stroke="#6B7280" stroke-width="1.6" stroke-linecap="round"/>
       <line x1="55.00" y1="14.02" x2="57.50" y2="9.69" stroke="#6B7280" stroke-width="1.6" stroke-linecap="round"/>
@@ -759,23 +875,66 @@
     <g class="clock-hand clock-hand-second">
       <line x1="40" y1="44" x2="40" y2="12" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
     </g>
+    <g class="clock-broken-mark" aria-hidden="true">
+      <path d="M26 54 L54 26" stroke="#CBD5E1" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M20 42 L60 50" stroke="#E5E7EB" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="57" cy="57" r="1.4" fill="#9CA3AF" opacity="0.55"/>
+      <circle cx="24" cy="30" r="1" fill="#9CA3AF" opacity="0.45"/>
+    </g>
     <circle cx="40" cy="40" r="2.8" fill="#111827"/>
     <circle cx="40" cy="40" r="1.2" fill="#DC2626"/>
   </svg>
-  <svg class="stopwatch" width="104" height="72" viewBox="0 0 52 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M8.112 2.756V5.12V5.78C8.532 5.276 9.12 5.024 9.852 5.024C11.28 5.024 12.18 5.756 12.18 7.088V11H11.124V7.376C11.124 6.428 10.488 5.96 9.66 5.96C9.24 5.96 8.88 6.092 8.568 6.356C8.268 6.62 8.112 6.956 8.112 7.352V11H7.056V2.756H8.112ZM21.0283 5.24C21.3043 4.988 21.7483 4.988 22.0003 5.24C22.2763 5.492 22.2763 5.924 22.0003 6.176C21.7483 6.428 21.3043 6.428 21.0283 6.176C20.7523 5.924 20.7523 5.492 21.0283 5.24ZM21.0283 9.932C21.3043 9.68 21.7483 9.68 22.0003 9.932C22.2763 10.184 22.2763 10.616 22.0003 10.868C21.7483 11.12 21.3043 11.12 21.0283 10.868C20.7523 10.616 20.7523 10.184 21.0283 9.932ZM37.8143 5.024C39.2423 5.024 40.1423 5.756 40.1423 7.088V11H39.0863V7.376C39.0863 6.428 38.4503 5.96 37.6223 5.96C37.2023 5.96 36.8423 6.092 36.5423 6.356C36.2422 6.62 36.0863 6.956 36.0863 7.352V11H35.0303V7.376C35.0303 6.428 34.3943 5.96 33.5663 5.96C33.1463 5.96 32.7863 6.092 32.4743 6.356C32.1743 6.62 32.0183 6.956 32.0183 7.352V11H30.9623V5.144H31.9703V5.252V5.828C32.4143 5.288 33.0383 5.024 33.8303 5.024C34.7663 5.024 35.4263 5.372 35.7983 6.056C36.1223 5.516 36.8663 5.024 37.8143 5.024ZM42.7179 2.852C43.0419 2.852 43.3299 3.14 43.3299 3.476C43.3299 3.824 43.0419 4.112 42.7179 4.112C42.3699 4.112 42.0819 3.824 42.0819 3.476C42.0819 3.128 42.3699 2.852 42.7179 2.852ZM43.2339 5.144V11H42.1899V5.144H43.2339ZM48.1723 5.024C49.6003 5.024 50.5003 5.756 50.5003 7.088V11H49.4443V7.376C49.4443 6.428 48.8083 5.96 47.9803 5.96C47.5603 5.96 47.2003 6.092 46.8883 6.356C46.5883 6.62 46.4323 6.956 46.4323 7.352V11H45.3763V5.144H46.3843V5.24V5.828C46.8283 5.288 47.4283 5.024 48.1723 5.024Z" fill="#C92020"/>
-    <path d="M21.1455 25.24C21.4215 24.988 21.8655 24.988 22.1175 25.24C22.3935 25.492 22.3935 25.924 22.1175 26.176C21.8655 26.428 21.4215 26.428 21.1455 26.176C20.8695 25.924 20.8695 25.492 21.1455 25.24ZM21.1455 29.932C21.4215 29.68 21.8655 29.68 22.1175 29.932C22.3935 30.184 22.3935 30.616 22.1175 30.868C21.8655 31.12 21.4215 31.12 21.1455 30.868C20.8695 30.616 20.8695 30.184 21.1455 29.932Z" fill="#C92020"/>
-    <g class="stopwatch-digits">
-      <text class="stopwatch-digit" data-stopwatch-part="h1" x="3.82" y="27.1" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#C92020">0</text>
-      <text class="stopwatch-digit" data-stopwatch-part="h2" x="9.93" y="27.1" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#C92020">0</text>
-      <text class="stopwatch-digit" data-stopwatch-part="m1" x="33.34" y="27.1" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#C92020">0</text>
-      <text class="stopwatch-digit" data-stopwatch-part="m2" x="39.96" y="27.1" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#C92020">0</text>
-    </g>
-  </svg>
+  <div class="stopwatch" id="stopwatchEl" aria-live="polite">00 h : 00 min</div>
+  <div class="hud-question-slot">
+    <div class="speed-question-panel" id="speedQuestionPanel">
+      <div class="calc-question-row">
+        <p class="speed-question-text" id="speedQuestionText">Jakou rychlostí auto jede?</p>
+        <div class="speed-answer-panel" id="speedAnswerRow">
+          <input type="number" class="speed-answer-input" id="speedAnswerInput" min="0" step="1" inputmode="numeric" aria-label="Odpověď v kilometrech za hodinu" />
+          <span class="unit-fraction" aria-label="kilometrů za hodinu">
+  <span class="unit-fraction-part">km</span>
+  <span class="unit-fraction-bar" aria-hidden="true"></span>
+  <span class="unit-fraction-part">h</span>
+</span>
+          <button type="button" class="speed-check-btn" id="speedCheckBtn" aria-label="Ověřit odpověď">✓</button>
+        </div>
+      </div>
+      <p class="speed-answer-feedback" id="speedAnswerFeedback" aria-live="polite"></p>
+    </div>
+    <div class="distance-question-panel" id="distanceQuestionPanel">
+      <div class="calc-question-row">
+        <p class="distance-question-text" id="distanceQuestionText">Jak daleko auto dojede?</p>
+        <div class="distance-answer-panel" id="distanceAnswerRow">
+          <input type="number" class="distance-answer-input" id="distanceAnswerInput" min="0" step="1" inputmode="numeric" aria-label="Odpověď v kilometrech" />
+          <span>km</span>
+          <button type="button" class="distance-check-btn" id="distanceCheckBtn" aria-label="Ověřit odpověď">✓</button>
+        </div>
+      </div>
+      <p class="distance-answer-feedback" id="distanceAnswerFeedback" aria-live="polite"></p>
+    </div>
+    <div class="time-question-panel" id="timeQuestionPanel">
+      <div class="calc-question-row">
+        <p class="time-question-text" id="timeQuestionText">Jak dlouho auto pojede?</p>
+        <div class="time-answer-panel" id="timeAnswerRow">
+          <input type="text" class="time-answer-input" id="timeAnswerInput" inputmode="decimal" aria-label="Odpověď v hodinách" />
+          <span>h</span>
+          <button type="button" class="time-check-btn" id="timeCheckBtn" aria-label="Ověřit odpověď">✓</button>
+        </div>
+      </div>
+      <p class="time-answer-feedback" id="timeAnswerFeedback" aria-live="polite"></p>
+    </div>
+  </div>
   </div>
 </div>
-<div class="distance-readout" aria-live="polite">
-  <span class="distance-readout-value" id="distanceReadout">0</span><span class="distance-readout-unit"> km</span>
+<div class="distance-readout-wrap">
+  <div class="distance-readout" id="distanceReadoutEl" aria-live="polite">
+    <svg class="distance-readout-icon" width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M2 9.5 Q15 1.5 28 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M11 7.8 L19 6.2" stroke="currentColor" stroke-width="1.1" stroke-dasharray="2.2 2.2" stroke-linecap="round" opacity="0.55"/>
+    </svg>
+    <span class="distance-readout-value" id="distanceReadout">0</span>
+    <span class="distance-readout-unit">km</span>
+  </div>
 </div>
 </div>
 
@@ -1496,7 +1655,7 @@
 <div class="controls-wrap">
 <nav class="controls" aria-label="Ovládání animace">
   <div class="controls-fields">
-    <div class="setting-panel" aria-label="Nastavení cíle">
+    <div class="setting-panel" id="goalSettingPanel" aria-label="Nastavení cíle">
       <div class="distance-field">
         <span class="distance-field-label">Cíl</span>
         <span class="distance-field-row">
@@ -1510,7 +1669,25 @@
         <button type="button" class="value-step-btn" id="targetKmInc" aria-label="Prodloužit cíl o 10 kilometrů">+</button>
       </div>
     </div>
-    <div class="setting-panel" aria-label="Nastavení času">
+    <div class="setting-panel" id="speedSettingPanel" hidden aria-label="Nastavení rychlosti">
+      <div class="distance-field">
+        <span class="distance-field-label">Rychlost</span>
+        <span class="distance-field-row">
+          <span class="var-equals" aria-hidden="true"><em>v</em> =</span>
+          <input type="text" id="targetSpeedInput" value="60" readonly tabindex="-1" aria-label="Rychlost v kilometrech za hodinu" aria-live="polite" />
+          <span class="unit-fraction" aria-label="kilometrů za hodinu">
+  <span class="unit-fraction-part">km</span>
+  <span class="unit-fraction-bar" aria-hidden="true"></span>
+  <span class="unit-fraction-part">h</span>
+</span>
+        </span>
+      </div>
+      <div class="setting-steppers">
+        <button type="button" class="value-step-btn" id="targetSpeedDec" aria-label="Zpomalit o 5 kilometrů za hodinu">−</button>
+        <button type="button" class="value-step-btn" id="targetSpeedInc" aria-label="Zrychlit o 5 kilometrů za hodinu">+</button>
+      </div>
+    </div>
+    <div class="setting-panel" id="timeSettingPanel" aria-label="Nastavení času">
       <div class="distance-field">
         <span class="distance-field-label">Čas</span>
         <span class="distance-field-row">
@@ -1525,11 +1702,11 @@
       </div>
     </div>
   </div>
+</nav>
   <div class="controls-actions">
     <button type="button" class="start-btn" id="startBtn">Spustit</button>
     <button type="button" class="pause-btn" id="pauseBtn" disabled>Pauza</button>
   </div>
-</nav>
 </div>
 
 <nav class="car-picker" aria-label="Výběr auta">
@@ -1542,9 +1719,17 @@
   const stage = document.querySelector('.stage');
   const startBtn = document.getElementById('startBtn');
   const pauseBtn = document.getElementById('pauseBtn');
+  const goalSettingPanel = document.getElementById('goalSettingPanel');
+  const speedSettingPanel = document.getElementById('speedSettingPanel');
+  const timeSettingPanel = document.getElementById('timeSettingPanel');
+  const clockStack = document.getElementById('clockStack');
+  const analogClockEl = document.getElementById('analogClockEl');
   const targetKmInput = document.getElementById('targetKmInput');
   const targetKmDec = document.getElementById('targetKmDec');
   const targetKmInc = document.getElementById('targetKmInc');
+  const targetSpeedInput = document.getElementById('targetSpeedInput');
+  const targetSpeedDec = document.getElementById('targetSpeedDec');
+  const targetSpeedInc = document.getElementById('targetSpeedInc');
   const targetHoursInput = document.getElementById('targetHoursInput');
   const targetHoursDec = document.getElementById('targetHoursDec');
   const targetHoursInc = document.getElementById('targetHoursInc');
@@ -1552,6 +1737,9 @@
   const MIN_TARGET_DISPLAY_KM = 10;
   const TARGET_KM_STEP = 10;
   const DEFAULT_TARGET_DISPLAY_KM = 60;
+  const MIN_TARGET_SPEED_KMH = 5;
+  const TARGET_SPEED_STEP = 5;
+  const DEFAULT_TARGET_SPEED_KMH = 60;
   const DEFAULT_TARGET_HOURS = 1;
   const MIN_TARGET_HOURS = 0.5;
   const MAX_TARGET_HOURS = 99;
@@ -1583,6 +1771,7 @@
   let currentRunAnimSpeed = ANIM_SPEED;
   let currentRunSpeedKmS = 0;
   const instrumentCluster = document.querySelector('.instrument-cluster');
+  const stopwatchEl = document.getElementById('stopwatchEl');
   const speedStack = document.querySelector('.speed-stack');
   const speedometerEl = document.querySelector('.speedometer');
   const speedQuestionPanel = document.getElementById('speedQuestionPanel');
@@ -1590,9 +1779,24 @@
   const speedCheckBtn = document.getElementById('speedCheckBtn');
   const speedAnswerRow = document.getElementById('speedAnswerRow');
   const speedAnswerFeedback = document.getElementById('speedAnswerFeedback');
+  const distanceReadoutEl = document.getElementById('distanceReadoutEl');
   const distanceReadout = document.getElementById('distanceReadout');
+  const distanceQuestionPanel = document.getElementById('distanceQuestionPanel');
+  const distanceQuestionText = document.getElementById('distanceQuestionText');
+  const distanceAnswerInput = document.getElementById('distanceAnswerInput');
+  const distanceCheckBtn = document.getElementById('distanceCheckBtn');
+  const distanceAnswerRow = document.getElementById('distanceAnswerRow');
+  const distanceAnswerFeedback = document.getElementById('distanceAnswerFeedback');
   const speedReadout = document.getElementById('speedReadout');
+  const timeQuestionPanel = document.getElementById('timeQuestionPanel');
+  const timeQuestionText = document.getElementById('timeQuestionText');
+  const timeAnswerInput = document.getElementById('timeAnswerInput');
+  const timeCheckBtn = document.getElementById('timeCheckBtn');
+  const timeAnswerRow = document.getElementById('timeAnswerRow');
+  const timeAnswerFeedback = document.getElementById('timeAnswerFeedback');
   const SPEED_CALC_CAR = '1';
+  const DISTANCE_CALC_CAR = '2';
+  const TIME_CALC_CAR = '3';
 
   function getActiveLane() {
     return document.querySelector('.lane[data-car="' + stage.dataset.view + '"]');
@@ -1639,20 +1843,25 @@
     return Math.max(0, (end - runStartTime - pausedTotalMs) / 1000);
   }
 
-  function getStopwatchParts() {
+  function getStopwatchText() {
     const totalStopwatchMinutes = (getElapsedRunSeconds() / REAL_SECONDS_PER_STOPWATCH_HOUR) * 60;
     const hours = Math.floor(totalStopwatchMinutes / 60);
     const minutes = Math.floor(totalStopwatchMinutes % 60);
-    return {
-      h1: Math.floor(hours / 10) % 10,
-      h2: hours % 10,
-      m1: Math.floor(minutes / 10),
-      m2: minutes % 10,
-    };
+    const hh = String(hours).padStart(2, '0');
+    const mm = String(minutes).padStart(2, '0');
+    return `${hh} h : ${mm} min`;
   }
 
   function isSpeedCalcMode() {
     return stage.dataset.view === SPEED_CALC_CAR;
+  }
+
+  function isDistanceCalcMode() {
+    return stage.dataset.view === DISTANCE_CALC_CAR;
+  }
+
+  function isTimeCalcMode() {
+    return stage.dataset.view === TIME_CALC_CAR;
   }
 
   function getCurrentSpeedKmh() {
@@ -1713,6 +1922,136 @@
     if (!show) clearSpeedAnswerFeedback();
   }
 
+  function getCorrectDistanceKm() {
+    return Math.round(getTargetSpeedKmh() * getTargetStopwatchHours());
+  }
+
+  function clearDistanceAnswerFeedback() {
+    if (distanceAnswerRow) {
+      distanceAnswerRow.classList.remove('is-correct', 'is-wrong');
+    }
+    if (distanceAnswerFeedback) {
+      distanceAnswerFeedback.textContent = '';
+      distanceAnswerFeedback.classList.remove('is-correct', 'is-wrong');
+    }
+  }
+
+  function verifyDistanceAnswer() {
+    if (!distanceAnswerInput) return;
+    const raw = Number(distanceAnswerInput.value);
+    clearDistanceAnswerFeedback();
+    if (!Number.isFinite(raw)) {
+      if (distanceAnswerRow) distanceAnswerRow.classList.add('is-wrong');
+      if (distanceAnswerFeedback) {
+        distanceAnswerFeedback.textContent = 'Zadej číslo';
+        distanceAnswerFeedback.classList.add('is-wrong');
+      }
+      return;
+    }
+    const isCorrect = Math.round(raw) === getCorrectDistanceKm();
+    if (distanceAnswerRow) distanceAnswerRow.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+    if (distanceAnswerFeedback) {
+      distanceAnswerFeedback.textContent = isCorrect ? 'Správně!' : 'Špatně';
+      distanceAnswerFeedback.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+    }
+  }
+
+  function updateDistanceQuestionPanel() {
+    const show = isDistanceCalcMode() && runStartTime !== null;
+    if (distanceQuestionPanel) {
+      distanceQuestionPanel.classList.toggle('is-visible', show);
+    }
+    if (distanceQuestionText) {
+      distanceQuestionText.textContent = finished
+        ? 'Jak daleko auto dojelo?'
+        : 'Jak daleko auto dojede?';
+    }
+    if (distanceAnswerInput) {
+      distanceAnswerInput.disabled = !show;
+    }
+    if (distanceCheckBtn) {
+      distanceCheckBtn.disabled = !show;
+    }
+    if (!show) clearDistanceAnswerFeedback();
+  }
+
+  function getCorrectTimeHours() {
+    return Math.round((getTargetDisplayKm() / getTargetSpeedKmh()) * 2) / 2;
+  }
+
+  function clearTimeAnswerFeedback() {
+    if (timeAnswerRow) {
+      timeAnswerRow.classList.remove('is-correct', 'is-wrong');
+    }
+    if (timeAnswerFeedback) {
+      timeAnswerFeedback.textContent = '';
+      timeAnswerFeedback.classList.remove('is-correct', 'is-wrong');
+    }
+  }
+
+  function verifyTimeAnswer() {
+    if (!timeAnswerInput) return;
+    const raw = parseHoursInput(timeAnswerInput.value);
+    clearTimeAnswerFeedback();
+    if (!Number.isFinite(raw)) {
+      if (timeAnswerRow) timeAnswerRow.classList.add('is-wrong');
+      if (timeAnswerFeedback) {
+        timeAnswerFeedback.textContent = 'Zadej číslo';
+        timeAnswerFeedback.classList.add('is-wrong');
+      }
+      return;
+    }
+    const isCorrect = Math.round(raw * 2) / 2 === getCorrectTimeHours();
+    if (timeAnswerRow) timeAnswerRow.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+    if (timeAnswerFeedback) {
+      timeAnswerFeedback.textContent = isCorrect ? 'Správně!' : 'Špatně';
+      timeAnswerFeedback.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+    }
+  }
+
+  function updateTimeQuestionPanel() {
+    const show = isTimeCalcMode() && runStartTime !== null;
+    if (timeQuestionPanel) {
+      timeQuestionPanel.classList.toggle('is-visible', show);
+    }
+    if (timeQuestionText) {
+      timeQuestionText.textContent = finished
+        ? 'Jak dlouho auto jelo?'
+        : 'Jak dlouho auto pojede?';
+    }
+    if (timeAnswerInput) {
+      timeAnswerInput.disabled = !show;
+    }
+    if (timeCheckBtn) {
+      timeCheckBtn.disabled = !show;
+    }
+    if (!show) clearTimeAnswerFeedback();
+  }
+
+  function updateAnalogClock() {
+    const timeCalcMode = isTimeCalcMode();
+    if (clockStack) clockStack.classList.toggle('time-calc-mode', timeCalcMode);
+    if (analogClockEl) analogClockEl.classList.toggle('is-broken', timeCalcMode);
+
+    if (timeCalcMode) {
+      if (instrumentCluster) {
+        instrumentCluster.style.setProperty('--hand-sec', handAngle(0));
+        instrumentCluster.style.setProperty('--hand-min', handAngle(0));
+        instrumentCluster.style.setProperty('--hand-hour', handAngle(0));
+      }
+      return false;
+    }
+    return true;
+  }
+
+  function updateSettingPanels() {
+    const distanceMode = isDistanceCalcMode();
+    const timeMode = isTimeCalcMode();
+    if (goalSettingPanel) goalSettingPanel.hidden = distanceMode;
+    if (speedSettingPanel) speedSettingPanel.hidden = !(distanceMode || timeMode);
+    if (timeSettingPanel) timeSettingPanel.hidden = timeMode;
+  }
+
   function updateSpeedometer() {
     const speedCalcMode = isSpeedCalcMode();
     if (speedStack) speedStack.classList.toggle('speed-calc-mode', speedCalcMode);
@@ -1734,22 +2073,23 @@
   }
 
   function updateDistanceReadout() {
+    if (distanceReadoutEl) {
+      distanceReadoutEl.classList.toggle('is-broken', isDistanceCalcMode());
+    }
     if (!distanceReadout) return;
+    if (isDistanceCalcMode()) {
+      if (distanceReadout.textContent !== '—') distanceReadout.textContent = '—';
+      return;
+    }
     const km = Math.round(getTravelKm());
     const text = String(km);
     if (distanceReadout.textContent !== text) distanceReadout.textContent = text;
   }
 
   function updateStopwatch() {
-    if (!instrumentCluster) return;
-    const parts = getStopwatchParts();
-    instrumentCluster.querySelectorAll('.stopwatch-digit').forEach((el) => {
-      const key = el.getAttribute('data-stopwatch-part');
-      const value = parts[key];
-      if (value === undefined) return;
-      const text = String(value);
-      if (el.textContent !== text) el.textContent = text;
-    });
+    if (!stopwatchEl || isTimeCalcMode()) return;
+    const text = getStopwatchText();
+    if (stopwatchEl.textContent !== text) stopwatchEl.textContent = text;
   }
 
   function setTargetKm(km) {
@@ -1773,6 +2113,29 @@
       return setTargetKm(DEFAULT_TARGET_DISPLAY_KM);
     }
     return setTargetKm(raw);
+  }
+
+  function setTargetSpeed(kmh) {
+    const clamped = Math.max(
+      MIN_TARGET_SPEED_KMH,
+      Math.round(kmh / TARGET_SPEED_STEP) * TARGET_SPEED_STEP
+    );
+    if (targetSpeedInput) targetSpeedInput.value = String(clamped);
+    return clamped;
+  }
+
+  function setSpeedControlsEnabled(enabled) {
+    if (targetSpeedInput) targetSpeedInput.disabled = !enabled;
+    if (targetSpeedDec) targetSpeedDec.disabled = !enabled;
+    if (targetSpeedInc) targetSpeedInc.disabled = !enabled;
+  }
+
+  function getTargetSpeedKmh() {
+    const raw = Number(targetSpeedInput && targetSpeedInput.value);
+    if (!Number.isFinite(raw)) {
+      return setTargetSpeed(DEFAULT_TARGET_SPEED_KMH);
+    }
+    return setTargetSpeed(raw);
   }
 
   function formatHoursDisplay(hours) {
@@ -1807,10 +2170,18 @@
   }
 
   function getRequiredRealSpeedKmS() {
-    const km = getTargetDisplayKm();
     const stopwatchHours = getTargetStopwatchHours();
-    const kmh = km / stopwatchHours;
+    const kmh = isDistanceCalcMode() || isTimeCalcMode()
+      ? getTargetSpeedKmh()
+      : getTargetDisplayKm() / stopwatchHours;
     return kmh * REFERENCE_KM_S / REFERENCE_KMH;
+  }
+
+  function getRunTargetKm() {
+    if (isDistanceCalcMode()) {
+      return Math.round(getTargetSpeedKmh() * getTargetStopwatchHours());
+    }
+    return getTargetDisplayKm();
   }
 
   function updateJetEngine() {
@@ -1953,6 +2324,7 @@
     }
 
     setTargetKm(DEFAULT_TARGET_DISPLAY_KM);
+    setTargetSpeed(DEFAULT_TARGET_SPEED_KMH);
     setTargetHours(DEFAULT_TARGET_HOURS);
     carButtons.forEach((btn, i) => {
       btn.classList.toggle('active', i === 0);
@@ -1967,9 +2339,14 @@
     pauseBtn.disabled = true;
     pauseBtn.textContent = 'Pauza';
     setKmControlsEnabled(true);
+    setSpeedControlsEnabled(true);
     setHoursControlsEnabled(true);
     if (speedAnswerInput) speedAnswerInput.value = '';
+    if (distanceAnswerInput) distanceAnswerInput.value = '';
+    if (timeAnswerInput) timeAnswerInput.value = '';
     clearSpeedAnswerFeedback();
+    clearDistanceAnswerFeedback();
+    clearTimeAnswerFeedback();
 
     if (instrumentCluster) {
       instrumentCluster.style.setProperty('--hand-sec', handAngle(0));
@@ -1982,6 +2359,10 @@
     updateDistanceReadout();
     updateSpeedometer();
     updateSpeedQuestionPanel();
+    updateDistanceQuestionPanel();
+    updateTimeQuestionPanel();
+    updateAnalogClock();
+    updateSettingPanels();
     updateStopwatch();
     updateJetEngine();
   }
@@ -2003,8 +2384,11 @@
     pauseBtn.disabled = true;
     pauseBtn.textContent = 'Pauza';
     setKmControlsEnabled(false);
+    setSpeedControlsEnabled(false);
     setHoursControlsEnabled(false);
     carButtons.forEach((btn) => { btn.disabled = true; });
+    updateDistanceQuestionPanel();
+    updateTimeQuestionPanel();
   }
 
   function updateClock() {
@@ -2016,7 +2400,7 @@
     if (stage.classList.contains('is-running') && getTravelKm() >= targetTravelKm) {
       stopAtDestination();
     }
-    if (instrumentCluster) {
+    if (updateAnalogClock() && instrumentCluster) {
       instrumentCluster.style.setProperty('--hand-sec', handAngle(km / KM_PER_SECOND_HAND_REV));
       instrumentCluster.style.setProperty('--hand-min', handAngle(km / KM_PER_MINUTE_HAND_REV));
       instrumentCluster.style.setProperty('--hand-hour', handAngle(km / KM_PER_HOUR_HAND_REV));
@@ -2039,14 +2423,28 @@
     const signWidthVw = (SIGN_W / vw) * 100;
     const hideLeftVw = ((SIGN_HALF_W - frontWheelPx) / vw) * 100 - signWidthVw;
     const hideRightVw = 105;
-    const markers = [];
-    const startKm = Math.max(0, Math.floor(travelKm / 10) * 10 - 20);
-    const endKm = Math.ceil(travelKm / 10) * 10 + 50;
+    let markers = [];
 
-    for (let km = startKm; km <= endKm; km += 10) {
-      const distVw = (km - travelKm) * SIGN_SPACING_VW;
-      if (distVw > hideLeftVw && distVw < hideRightVw) {
-        markers.push({ km, distVw });
+    if (isDistanceCalcMode()) {
+      const destKm = runStartTime !== null ? targetTravelKm : getCorrectDistanceKm();
+      const candidates = [
+        { km: 0, distVw: (0 - travelKm) * SIGN_SPACING_VW, label: '0' },
+        { km: destKm, distVw: (destKm - travelKm) * SIGN_SPACING_VW, label: '?' },
+      ];
+      for (const marker of candidates) {
+        if (marker.distVw > hideLeftVw && marker.distVw < hideRightVw) {
+          markers.push(marker);
+        }
+      }
+    } else {
+      const startKm = Math.max(0, Math.floor(travelKm / 10) * 10 - 20);
+      const endKm = Math.ceil(travelKm / 10) * 10 + 50;
+
+      for (let km = startKm; km <= endKm; km += 10) {
+        const distVw = (km - travelKm) * SIGN_SPACING_VW;
+        if (distVw > hideLeftVw && distVw < hideRightVw) {
+          markers.push({ km, distVw });
+        }
       }
     }
 
@@ -2054,19 +2452,20 @@
 
     lane.querySelectorAll('.km-sign').forEach((sign, i) => {
       if (i < markers.length) {
-        const { km, distVw } = markers[i];
+        const { km, distVw, label } = markers[i];
         const distPx = (distVw / 100) * vw;
+        const displayText = label !== undefined ? label : String(km);
         sign.style.transform = 'translate3d(' + distPx + 'px, 0, 0)';
         const num = sign.querySelector('.km-num');
-        if (Number(sign.dataset.displayKm) !== km) {
-          num.textContent = km;
-          num.setAttribute('font-size', kmFontSize(km));
-          sign.dataset.displayKm = String(km);
+        if (sign.dataset.displayLabel !== displayText) {
+          num.textContent = displayText;
+          num.setAttribute('font-size', displayText === '?' ? '16' : kmFontSize(km));
+          sign.dataset.displayLabel = displayText;
         }
-        sign.setAttribute('aria-label', km + ' km');
+        sign.setAttribute('aria-label', displayText === '?' ? '? km' : km + ' km');
         sign.hidden = false;
       } else {
-        delete sign.dataset.displayKm;
+        delete sign.dataset.displayLabel;
         sign.hidden = true;
       }
     });
@@ -2145,9 +2544,18 @@
       resetToStart();
       return;
     }
-    const targetDisplayKm = getTargetDisplayKm();
-    targetTravelKm = targetDisplayKm;
-    getTargetStopwatchHours();
+    if (isDistanceCalcMode() || isTimeCalcMode()) {
+      getTargetSpeedKmh();
+    }
+    if (!isDistanceCalcMode()) {
+      getTargetDisplayKm();
+    }
+    if (!isTimeCalcMode() && !isDistanceCalcMode()) {
+      getTargetStopwatchHours();
+    } else if (isDistanceCalcMode()) {
+      getTargetStopwatchHours();
+    }
+    targetTravelKm = getRunTargetKm();
     applyRunSpeed(getRequiredRealSpeedKmS());
     finished = false;
     paused = false;
@@ -2158,12 +2566,22 @@
     stage.classList.add('is-running');
     updateJetEngine();
     updateSpeedQuestionPanel();
+    updateDistanceQuestionPanel();
+    updateTimeQuestionPanel();
     startBtn.disabled = false;
     startBtn.textContent = 'Zpět na start';
     pauseBtn.disabled = false;
     pauseBtn.textContent = 'Pauza';
-    setKmControlsEnabled(false);
-    setHoursControlsEnabled(false);
+    if (isDistanceCalcMode()) {
+      setSpeedControlsEnabled(false);
+      setHoursControlsEnabled(false);
+    } else if (isTimeCalcMode()) {
+      setKmControlsEnabled(false);
+      setSpeedControlsEnabled(false);
+    } else {
+      setKmControlsEnabled(false);
+      setHoursControlsEnabled(false);
+    }
     carButtons.forEach((btn) => { btn.disabled = true; });
     startVegetation();
   });
@@ -2176,6 +2594,16 @@
   if (targetKmInc) {
     targetKmInc.addEventListener('click', () => {
       setTargetKm(Number(targetKmInput.value) + TARGET_KM_STEP);
+    });
+  }
+  if (targetSpeedDec) {
+    targetSpeedDec.addEventListener('click', () => {
+      setTargetSpeed(Number(targetSpeedInput.value) - TARGET_SPEED_STEP);
+    });
+  }
+  if (targetSpeedInc) {
+    targetSpeedInc.addEventListener('click', () => {
+      setTargetSpeed(Number(targetSpeedInput.value) + TARGET_SPEED_STEP);
     });
   }
   if (targetHoursDec) {
@@ -2201,9 +2629,18 @@
       btn.classList.add('active');
       stage.dataset.view = btn.dataset.car;
       if (speedAnswerInput) speedAnswerInput.value = '';
+      if (distanceAnswerInput) distanceAnswerInput.value = '';
+      if (timeAnswerInput) timeAnswerInput.value = '';
       clearSpeedAnswerFeedback();
+      clearDistanceAnswerFeedback();
+      clearTimeAnswerFeedback();
+      updateSettingPanels();
       updateSpeedometer();
+      updateAnalogClock();
       updateSpeedQuestionPanel();
+      updateDistanceQuestionPanel();
+      updateTimeQuestionPanel();
+      updateDistanceReadout();
     });
   });
 
@@ -2213,10 +2650,27 @@
   if (speedAnswerInput) {
     speedAnswerInput.addEventListener('input', clearSpeedAnswerFeedback);
   }
+  if (distanceCheckBtn) {
+    distanceCheckBtn.addEventListener('click', verifyDistanceAnswer);
+  }
+  if (distanceAnswerInput) {
+    distanceAnswerInput.addEventListener('input', clearDistanceAnswerFeedback);
+  }
+  if (timeCheckBtn) {
+    timeCheckBtn.addEventListener('click', verifyTimeAnswer);
+  }
+  if (timeAnswerInput) {
+    timeAnswerInput.addEventListener('input', clearTimeAnswerFeedback);
+  }
 
   updateKmSigns();
+  updateSettingPanels();
   updateSpeedometer();
+  updateAnalogClock();
   updateSpeedQuestionPanel();
+  updateDistanceQuestionPanel();
+  updateTimeQuestionPanel();
+  updateDistanceReadout();
   updateStopwatch();
   updateClock();
 </script>
