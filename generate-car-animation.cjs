@@ -159,19 +159,40 @@ function clockTickMarks() {
 }
 
 function answerKeypadMarkup() {
-  const digitBtns = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  const digitBtns = [7, 8, 9, 4, 5, 6, 1, 2, 3]
     .map((n) => `<button type="button" class="answer-keypad-key" data-key="${n}">${n}</button>`)
-    .join('\n    ');
-  return `<div class="answer-keypad" id="answerKeypad" hidden aria-label="Číselná klávesnice">
-  <div class="answer-keypad-grid" id="answerKeypadGrid" role="group" aria-label="Číslice">
-    ${digitBtns}
-    <button type="button" class="answer-keypad-key answer-keypad-key--comma" id="answerKeypadComma" data-key=",">,</button>
-    <button type="button" class="answer-keypad-key" data-key="0">0</button>
-    <button type="button" class="answer-keypad-key" data-key="backspace" aria-label="Smazat">⌫</button>
-  </div>
-  <div class="answer-keypad-actions">
-    <button type="button" class="answer-keypad-action answer-keypad-check" id="answerKeypadCheck" data-key="submit" aria-label="Ověřit odpověď">✓</button>
-    <button type="button" class="answer-keypad-action answer-keypad-close" id="answerKeypadClose" data-key="close" aria-label="Zavřít klávesnici">×</button>
+    .join('\n        ');
+  return `<div id="answerKeypad" class="answer-keypad-overlay" hidden>
+  <div class="answer-keypad-panel" role="dialog" aria-modal="true" aria-labelledby="answerKeypadTitle">
+    <p id="answerKeypadTitle" class="answer-keypad-panel__title">Odpověď</p>
+    <div id="answerKeypadDisplay" class="answer-keypad-panel__display" aria-live="polite">
+      <span id="answerKeypadDisplayValue" class="answer-keypad-panel__value"></span>
+      <span id="answerKeypadDisplayUnit" class="answer-keypad-panel__unit" aria-hidden="true"></span>
+    </div>
+    <div class="answer-keypad" aria-label="Číselná klávesnice">
+      <div class="answer-keypad-grid" id="answerKeypadGrid" role="group" aria-label="Číslice">
+        ${digitBtns}
+        <button type="button" class="answer-keypad-key answer-keypad-key--comma" id="answerKeypadComma" data-key=",">,</button>
+        <button type="button" class="answer-keypad-key" data-key="0">0</button>
+        <button type="button" class="answer-keypad-key" data-key="clear" aria-label="Smazat vše">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="answer-keypad-actions">
+      <button type="button" class="answer-keypad-action answer-keypad-close" id="answerKeypadClose" data-key="close" aria-label="Zavřít klávesnici">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button type="button" class="answer-keypad-action answer-keypad-check" id="answerKeypadCheck" data-key="submit" aria-label="Ověřit odpověď">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M5 12.5l5 5L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </div>`;
 }
@@ -218,7 +239,6 @@ function clockMarkup() {
   </svg>
   <div class="stopwatch" id="stopwatchEl" aria-live="polite">00 h : 00 min</div>
   <div class="hud-question-slot">
-  ${answerKeypadMarkup()}
     <div class="speed-question-panel" id="speedQuestionPanel">
       <div class="calc-question-row">
         <p class="speed-question-text" id="speedQuestionText">Jakou rychlostí auto jede?</p>
@@ -508,7 +528,6 @@ function buildHtml() {
       max-width: min(380px, calc(100vw - 48px));
       pointer-events: none;
     }
-    .hud-question-slot .answer-keypad,
     .hud-question-slot .speed-question-panel,
     .hud-question-slot .distance-question-panel,
     .hud-question-slot .time-question-panel {
@@ -1122,20 +1141,72 @@ function buildHtml() {
         height: 44px;
       }
     }
-    .answer-keypad {
-      position: absolute;
-      right: calc(100% + 12px);
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 1;
-      padding: 10px;
-      background: rgba(255, 255, 255, 0.96);
-      border: 1px solid #E5E7EB;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    .answer-keypad-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.42);
     }
-    .answer-keypad[hidden] {
+    .answer-keypad-overlay[hidden] {
       display: none !important;
+    }
+    .answer-keypad-panel {
+      width: min(100%, 300px);
+      padding: 16px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #e8eaef;
+      box-shadow: 0 14px 42px rgba(15, 23, 42, 0.22);
+      display: grid;
+      gap: 12px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .answer-keypad-panel__title {
+      margin: 0;
+      font: 650 0.9rem/1.3 system-ui, -apple-system, sans-serif;
+      color: #6b7280;
+      text-align: center;
+    }
+    .answer-keypad-panel__display {
+      box-sizing: border-box;
+      height: 64px;
+      min-height: 64px;
+      padding: 10px 14px;
+      border: 2px solid #e8eaef;
+      border-radius: 10px;
+      background: #f4f5f8;
+      font: 650 1.5rem/1.2 system-ui, -apple-system, sans-serif;
+      text-align: center;
+      color: #171923;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .answer-keypad-panel__value {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .answer-keypad-panel__unit {
+      flex-shrink: 0;
+      color: inherit;
+      font: inherit;
+      display: inline-flex;
+      align-items: center;
+    }
+    .answer-keypad-panel__unit .unit-fraction {
+      font: inherit;
+      color: inherit;
+      vertical-align: middle;
+    }
+    .answer-keypad-panel__unit .unit-fraction-part {
+      font: inherit;
     }
     body.is-keypad-open .stage,
     body.is-keypad-open .controls-wrap,
@@ -1143,7 +1214,8 @@ function buildHtml() {
     body.is-keypad-open .instrument-cluster > .speed-stack,
     body.is-keypad-open .instrument-cluster .analog-clock,
     body.is-keypad-open .instrument-cluster .stopwatch,
-    body.is-keypad-open .distance-readout-wrap {
+    body.is-keypad-open .distance-readout-wrap,
+    body.is-keypad-open .hud-question-slot {
       filter: blur(4px);
       transition: filter 0.2s ease;
     }
@@ -1151,20 +1223,23 @@ function buildHtml() {
     body.is-keypad-open .car-picker {
       pointer-events: none;
     }
+    .answer-keypad {
+      width: 100%;
+    }
     .answer-keypad-grid {
       display: grid;
-      grid-template-columns: repeat(3, 56px);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
     }
     .answer-keypad-key {
       appearance: none;
-      width: 56px;
-      height: 48px;
-      border: 1px solid #D1D5DB;
-      background: #F9FAFB;
-      color: #111827;
-      border-radius: 12px;
-      font: 700 20px/1 system-ui, -apple-system, sans-serif;
+      -webkit-appearance: none;
+      min-height: 44px;
+      border: 1px solid #e8eaef;
+      border-radius: 10px;
+      background: #f4f5f8;
+      color: #171923;
+      font: 650 1.125rem/1 system-ui, -apple-system, sans-serif;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -1174,84 +1249,99 @@ function buildHtml() {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
+    .answer-keypad-key svg {
+      display: block;
+      flex-shrink: 0;
+    }
     .answer-keypad-key:hover:not(:disabled) {
-      background: #F3F4F6;
-      border-color: #9CA3AF;
+      border-color: #3d5a9a;
+      background: #eceff5;
     }
     .answer-keypad-key:active:not(:disabled) {
-      background: #E5E7EB;
+      background: rgba(61, 90, 154, 0.12);
     }
     .answer-keypad-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
     }
     .answer-keypad-action {
       appearance: none;
-      height: 48px;
-      border: 1px solid #111827;
-      background: #fff;
-      color: #111827;
-      border-radius: 12px;
-      font: 700 20px/1 system-ui, -apple-system, sans-serif;
-      cursor: pointer;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+      width: 56px;
+      height: 56px;
+      margin: 0;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0;
+      line-height: 0;
+      cursor: pointer;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      transition: filter 0.15s, background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+    .answer-keypad-action svg {
+      display: block;
+      flex-shrink: 0;
+    }
+    .answer-keypad-check {
+      background: #3d5a9a;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(61, 90, 154, 0.35);
+    }
+    .answer-keypad-close {
+      background: #f4f5f8;
+      color: #6b7280;
+      border: 1px solid #e8eaef;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
     }
     .answer-keypad-action:hover:not(:disabled) {
-      background: #F3F4F6;
-      border-color: #374151;
+      filter: brightness(1.05);
+    }
+    .answer-keypad-close:hover:not(:disabled) {
+      color: #171923;
+      border-color: #3d5a9a;
     }
     .answer-keypad-action:active:not(:disabled) {
-      background: #E5E7EB;
+      transform: scale(0.97);
     }
     .answer-keypad-check.is-correct {
-      border-color: #15803D;
       background: #16A34A;
       color: #fff;
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
     }
     .answer-keypad-check.is-correct:hover:not(:disabled) {
       background: #15803D;
-      border-color: #166534;
     }
     .answer-keypad-check.is-approximate {
-      border-color: #EA580C;
       background: #F97316;
       color: #fff;
+      box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
     }
     .answer-keypad-check.is-approximate:hover:not(:disabled) {
       background: #EA580C;
-      border-color: #C2410C;
     }
     .answer-keypad-check.is-wrong {
-      border-color: #B91C1C;
       background: #DC2626;
       color: #fff;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
     }
     .answer-keypad-check.is-wrong:hover:not(:disabled) {
       background: #B91C1C;
-      border-color: #991B1B;
     }
     @media (pointer: coarse) {
-      .answer-keypad-grid {
-        grid-template-columns: repeat(3, 60px);
-        gap: 10px;
-      }
       .answer-keypad-key {
-        width: 60px;
-        height: 52px;
-        font-size: 22px;
+        min-height: 52px;
+        font-size: 1.25rem;
       }
       .answer-keypad-action {
-        height: 52px;
-        font-size: 22px;
+        width: 60px;
+        height: 60px;
       }
     }
     .distance-field input:disabled {
@@ -1451,7 +1541,8 @@ ${cssWheels}
       body.is-keypad-open .instrument-cluster > .speed-stack,
       body.is-keypad-open .instrument-cluster .analog-clock,
       body.is-keypad-open .instrument-cluster .stopwatch,
-      body.is-keypad-open .distance-readout-wrap {
+      body.is-keypad-open .distance-readout-wrap,
+      body.is-keypad-open .hud-question-slot {
         transition: none;
       }
     }
@@ -1459,6 +1550,7 @@ ${cssWheels}
 </head>
 <body>
 ${clockMarkup()}
+${answerKeypadMarkup()}
 
 <div class="stage" data-view="1">
 
@@ -1608,8 +1700,13 @@ ${buttons}
   const timeAnswerFeedback = document.getElementById('timeAnswerFeedback');
   const answerKeypad = document.getElementById('answerKeypad');
   const answerKeypadCheck = document.getElementById('answerKeypadCheck');
+  const answerKeypadDisplay = document.getElementById('answerKeypadDisplay');
+  const answerKeypadDisplayValue = document.getElementById('answerKeypadDisplayValue');
+  const answerKeypadDisplayUnit = document.getElementById('answerKeypadDisplayUnit');
+  const answerKeypadTitle = document.getElementById('answerKeypadTitle');
   const answerInputs = [speedAnswerInput, distanceAnswerInput, timeAnswerInput].filter(Boolean);
   let activeAnswerInput = null;
+  let pausedByKeypad = false;
   const SPEED_CALC_CAR = '1';
   const DISTANCE_CALC_CAR = '2';
   const TIME_CALC_CAR = '3';
@@ -1753,6 +1850,34 @@ ${buttons}
     if (!input) return;
     input.value = value;
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    if (activeAnswerInput === input) syncKeypadDisplay(input);
+  }
+
+  function getKeypadUnitMarkup(input) {
+    if (input === speedAnswerInput) {
+      return '<span class="unit-fraction" aria-label="kilometrů za hodinu"><span class="unit-fraction-part">km</span><span class="unit-fraction-bar" aria-hidden="true"></span><span class="unit-fraction-part">h</span></span>';
+    }
+    if (input === distanceAnswerInput) return 'km';
+    if (input === timeAnswerInput) return 'h';
+    return '';
+  }
+
+  function syncKeypadDisplay(input) {
+    if (answerKeypadDisplayValue) {
+      answerKeypadDisplayValue.textContent = input && input.value ? input.value : '';
+    } else if (answerKeypadDisplay) {
+      answerKeypadDisplay.textContent = input && input.value ? input.value : '';
+    }
+    if (answerKeypadDisplayUnit) {
+      answerKeypadDisplayUnit.innerHTML = input ? getKeypadUnitMarkup(input) : '';
+    }
+  }
+
+  function getKeypadTitleForInput(input) {
+    if (input === speedAnswerInput) return 'Rychlost';
+    if (input === distanceAnswerInput) return 'Vzdálenost';
+    if (input === timeAnswerInput) return 'Čas';
+    return 'Odpověď';
   }
 
   function syncKeypadCheckFeedback(className) {
@@ -1791,8 +1916,13 @@ ${buttons}
   function hideAnswerKeypad() {
     activeAnswerInput = null;
     syncKeypadCheckFeedback(null);
+    syncKeypadDisplay(null);
     if (answerKeypad) answerKeypad.hidden = true;
     setKeypadOpen(false);
+    if (pausedByKeypad) {
+      pausedByKeypad = false;
+      if (paused && !finished) resumeRun();
+    }
   }
 
   function submitActiveAnswer() {
@@ -1804,14 +1934,25 @@ ${buttons}
   function showAnswerKeypad(input) {
     if (!answerKeypad || !input || input.disabled) return;
     activeAnswerInput = input;
+    if (answerKeypadTitle) answerKeypadTitle.textContent = getKeypadTitleForInput(input);
+    syncKeypadDisplay(input);
     answerKeypad.hidden = false;
     setKeypadOpen(true);
+    if (!paused && !finished && stage.classList.contains('is-running')) {
+      pauseRun();
+      pausedByKeypad = true;
+    }
     syncKeypadCheckFromInput(input);
+    try { input.blur(); } catch (_) {}
   }
 
   function handleAnswerKeypadKey(key) {
     if (!activeAnswerInput) return;
     const current = activeAnswerInput.value;
+    if (key === 'clear') {
+      setAnswerInputValue(activeAnswerInput, '');
+      return;
+    }
     if (key === 'backspace') {
       setAnswerInputValue(activeAnswerInput, current.slice(0, -1));
       return;
@@ -1832,14 +1973,20 @@ ${buttons}
   function initAnswerKeypad() {
     if (answerKeypad) {
       answerKeypad.addEventListener('pointerdown', (event) => {
+        if (event.target === answerKeypad) return;
         event.preventDefault();
       });
       answerKeypad.addEventListener('click', (event) => {
+        if (event.target === answerKeypad) {
+          hideAnswerKeypad();
+          return;
+        }
         const btn = event.target.closest('[data-key]');
         if (!btn) return;
         const key = btn.getAttribute('data-key');
         if (key === 'submit') {
           submitActiveAnswer();
+          hideAnswerKeypad();
           return;
         }
         if (key === 'close') {
@@ -1851,17 +1998,39 @@ ${buttons}
     }
     answerInputs.forEach((input) => {
       input.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
         event.stopPropagation();
         showAnswerKeypad(input);
       });
       input.addEventListener('focus', () => showAnswerKeypad(input));
     });
-    document.addEventListener('pointerdown', (event) => {
-      if (!answerKeypad || answerKeypad.hidden) return;
-      const target = event.target;
-      if (answerKeypad.contains(target)) return;
-      if (answerInputs.some((input) => input === target || input.contains(target))) return;
-      hideAnswerKeypad();
+    document.addEventListener('keydown', (event) => {
+      if (!answerKeypad || answerKeypad.hidden || !activeAnswerInput) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        hideAnswerKeypad();
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitActiveAnswer();
+        hideAnswerKeypad();
+        return;
+      }
+      if (event.key === 'Backspace') {
+        event.preventDefault();
+        handleAnswerKeypadKey('backspace');
+        return;
+      }
+      if (event.key === ',' || event.key === '.') {
+        event.preventDefault();
+        handleAnswerKeypadKey(',');
+        return;
+      }
+      if (event.key >= '0' && event.key <= '9') {
+        event.preventDefault();
+        handleAnswerKeypadKey(event.key);
+      }
     });
   }
 
@@ -2327,6 +2496,7 @@ ${buttons}
   function resetToStart() {
     finished = false;
     paused = false;
+    pausedByKeypad = false;
     pausedTotalMs = 0;
     pauseStartTime = null;
     baseKm = 0;
@@ -2589,6 +2759,7 @@ ${buttons}
     applyRunSpeed(getRequiredRealSpeedKmS());
     finished = false;
     paused = false;
+    pausedByKeypad = false;
     pausedTotalMs = 0;
     pauseStartTime = null;
     runStartTime = performance.now();
